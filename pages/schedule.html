@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>活動排程 | 內湖高中軍武社</title>
 
-  <!-- Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- FullCalendar -->
-  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+  <!-- FullCalendar 全域版本 -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
   <!-- 字體 -->
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
@@ -18,13 +18,27 @@
     body {
       font-family: 'Roboto', sans-serif;
     }
-    h1 {
+    h1, h2 {
       font-family: 'Oswald', sans-serif;
+    }
+    #calendar {
+      background-color: #1f2937;
+      color: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+    .fc .fc-daygrid-day-number {
+      color: #facc15;
+    }
+    .fc-event {
+      background-color: #2563eb !important;
+      border: none !important;
+      color: white !important;
+      font-weight: bold;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white">
-<body style="opacity:0; transition:opacity 0.4s ease;" onload="document.body.style.opacity='1'">
+<body class="bg-gray-900 text-white" style="opacity:0; transition:opacity 0.4s ease;" onload="document.body.style.opacity='1'">
 
   <!-- 導覽列 -->
   <header class="bg-green-900 p-4 flex justify-between items-center">
@@ -38,12 +52,26 @@
       <a href="about.html" class="hover:text-yellow-300">關於我們</a>
     </nav>
   </header>
-  
+
   <!-- 活動調查表單 -->
   <section class="bg-gray-900 text-white py-10 px-8 text-center" data-aos="fade-up">
-  <h2 class="text-2xl font-bold text-yellow-300 mb-4">📋 活動調查表單</h2>
-  <iframe src="https://forms.gle/tRXqttBhpaNNvqSH9" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
-</section>
+    <h2 class="text-2xl font-bold text-yellow-300 mb-4">📋 活動調查表單</h2>
+    <iframe src="https://forms.gle/tRXqttBhpaNNvqSH9" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
+  </section>
+
+  <!-- 活動日曆 -->
+  <section class="bg-gray-900 text-white py-10 px-8 text-center" data-aos="fade-up">
+    <h2 class="text-2xl font-bold text-yellow-300 mb-4">🗓️ 活動日曆</h2>
+    <div id="calendar" class="shadow-md max-w-4xl mx-auto mb-6"></div>
+
+    <!-- 活動細節區塊 -->
+    <div id="eventDetail" class="max-w-2xl mx-auto bg-gray-800 rounded-lg p-4 text-left hidden">
+      <h3 class="text-xl font-bold text-yellow-300 mb-2">📌 活動細節</h3>
+      <p id="eventTitle" class="mb-1"><strong>活動：</strong></p>
+      <p id="eventDate" class="mb-1"><strong>日期：</strong></p>
+      <p id="eventDesc" class="mb-1"><strong>說明：</strong></p>
+    </div>
+  </section>
 
   <!-- 頁尾 -->
   <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
@@ -53,8 +81,13 @@
   <!-- 初始化 FullCalendar -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
+      const calendarEl = document.getElementById('calendar');
+      const detailBox = document.getElementById('eventDetail');
+      const titleEl = document.getElementById('eventTitle');
+      const dateEl = document.getElementById('eventDate');
+      const descEl = document.getElementById('eventDesc');
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'zh-tw',
         headerToolbar: {
@@ -63,21 +96,37 @@
           right: 'dayGridMonth,timeGridWeek'
         },
         events: [
-          { title: '軍事演練', start: '2025-09-25' },
-          { title: '社課：戰術講解', start: '2025-09-28' },
-          { title: '幹部會議', start: '2025-10-02' }
-        ]
+          {
+            title: '軍事演練',
+            start: '2025-09-25',
+            description: '模擬戰場環境，進行戰術演練',
+            color: '#f87171'
+          },
+          {
+            title: '社課：戰術講解',
+            start: '2025-09-28',
+            description: '由學長講解小隊戰術與通訊流程',
+            color: '#60a5fa'
+          },
+          {
+            title: '幹部會議',
+            start: '2025-10-02',
+            description: '討論下月活動規劃與人員分工',
+            color: '#34d399'
+          }
+        ],
+        eventClick: function(info) {
+          info.jsEvent.preventDefault(); // 阻止跳轉
+
+          titleEl.textContent = `活動：${info.event.title}`;
+          dateEl.textContent = `日期：${info.event.start.toLocaleDateString()}`;
+          descEl.textContent = `說明：${info.event.extendedProps.description || '無'}`;
+          detailBox.classList.remove('hidden');
+        }
       });
+
       calendar.render();
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
