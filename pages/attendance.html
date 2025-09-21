@@ -119,6 +119,9 @@
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload)
       }).then(()=>alert("✅ 已儲存簽到資料！"));
+        .then(res => res.text())
+        .then(msg => alert(msg))
+        .catch(err => alert("❌ 發送失敗：" + err));
     });
 
     exportBtn.addEventListener("click",()=>{
