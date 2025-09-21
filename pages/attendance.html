@@ -1,25 +1,60 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <header class="bg-green-900 p-4 flex justify-between items-center mb-6">
-  <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
-  <nav class="space-x-4 text-white">
-    <a href="../index.html" class="hover:text-yellow-300">首頁</a>
-    <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
-    <a href="attendance.html" class="text-yellow-300 font-bold underline">出缺勤</a>
-    <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
-    <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
-    <a href="about.html" class="hover:text-yellow-300">關於我們</a>
-  </nav>
-</header>
-<section class="bg-gray-900 text-white py-20 px-8 text-center">
-  <h2 class="text-3xl font-bold text-yellow-300 mb-4">🛠️ 出缺勤系統開發中</h2>
-  <p class="text-lg text-gray-300 mb-6">此模組尚在建置中，預計將支援幹部簽到、統計分析、出席率圖表等功能。</p>
-  <a href="../index.html" class="inline-block bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-300 transition transform hover:scale-105">
-    返回首頁 →
-  </a>
-</section>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>出缺勤系統 | 內湖高中軍武社</title>
 
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    h1, h2, h3 {
+      font-family: 'Oswald', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- 導覽列 -->
+  <header class="bg-green-900 p-4 flex flex-wrap justify-between items-center gap-4">
+    <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+    <nav class="flex flex-wrap gap-2 justify-center md:justify-end text-sm md:text-base">
+      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
+      <a href="map.html" class="hover:text-yellow-300">教室地圖</a>
+      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
+      <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
+      <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
+      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
+    </nav>
+  </header>
+
+  <!-- 出缺勤系統 -->
+  <section class="py-10 px-4 md:px-8 max-w-4xl mx-auto text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">🛠️ 出缺勤系統（建置中）</h2>
+    <p class="text-sm md:text-base text-gray-200 mb-6">
+      此模組尚在開發中，未來將支援社課簽到、請假申請、幹部審核與統計圖表。敬請期待！
+    </p>
+
+    <div class="bg-gray-800 p-6 rounded shadow">
+      <h3 class="text-lg md:text-xl font-bold text-yellow-200 mb-2">📌 預定功能</h3>
+      <ul class="list-disc list-inside text-sm md:text-base text-gray-200 space-y-1 text-left">
+        <li>社課簽到與請假表單</li>
+        <li>幹部審核與備註功能</li>
+        <li>出缺勤統計圖表（月/季/年）</li>
+        <li>匯出 Excel / PDF 報表</li>
+        <li>LINE 社群通知整合</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 頁尾 -->
+  <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
 </body>
 </html>
-
