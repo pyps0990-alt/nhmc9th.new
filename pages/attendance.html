@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 <html lang="zh-Hant">
+<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,16 +7,12 @@
 
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- SheetJS (Excel 下載) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-  <!-- 字體 -->
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-    }
-    h1 {
-      font-family: 'Oswald', sans-serif;
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -38,177 +34,186 @@
   <main class="p-8">
     <h2 class="text-3xl font-bold text-yellow-300 mb-4">✅ 出缺勤點名</h2>
 
-    <table class="w-full bg-green-800 text-white rounded shadow">
-      <thead>
-        <tr class="bg-green-700">
-          <th class="p-2 text-left">姓名</th>
-          <th class="p-2 text-center">出席</th>
-        </tr>
-      </thead>
-      <tbody id="attendance-table">
-        <tr>
-          <td class="p-2">10112許紘瑞</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10410黃浩恩</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10421白雨晨</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10512陳冠廷</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10527梁瑞紗</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10803陳韋曄</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10901王翊宸</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10909張智翔</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">10916劉添淳</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11017謝雨泓</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11105張博凱</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11511郭兆崴</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11514黃家宏</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11603李翊愷</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">11714戴旭君</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">20103周元凱</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <tr>
-          <td class="p-2">20113藍宇恩</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20237鄧敏翎</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20335蔡維妮</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20508李文凱</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20618許德浩</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20620陳奕嘉</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20625劉宸廷</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20702呂祁叡</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20715陳俊睿</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20907邱彥叡</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20918黃友頡</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">20934韓怡萱</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21016黃子宸</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21315蕭川閔</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21605李緒恆</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21606洪子皓</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21629游閔喬</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-         <tr>
-          <td class="p-2">21703何家濬</td>
-          <td class="p-2 text-center"><input type="checkbox" class="attendance-checkbox" /></td>
-        </tr>
-        <!-- 可繼續新增社員 -->
-      </tbody>
-    </table>
-
-    <div class="mt-4 text-lg">
-      出席人數：<span id="attendance-count" class="text-yellow-300 font-bold">0</span> 人/
+    <!-- 日期選擇 -->
+    <div class="mb-6 flex items-center space-x-4">
+      <div>
+        <label for="date-picker" class="mr-2">選擇日期：</label>
+        <input type="date" id="date-picker" class="text-black px-2 py-1 rounded">
+      </div>
+      <button id="export-excel" class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-400">📂 匯出 Excel</button>
     </div>
+
+    <!-- Tabs -->
+    <div id="tab-container" class="flex space-x-4 mb-6">
+      <button class="tab-btn bg-green-700 px-4 py-2 rounded" data-tab="class1">第1堂課</button>
+    </div>
+    <button id="add-class" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500 mb-4">➕ 新增堂數</button>
+
+    <!-- Tab 內容容器 -->
+    <div id="content-container"></div>
   </main>
 
-  <!-- 頁尾 -->
-  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
-    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
-  </footer>
-
-  <!-- JavaScript 統計功能 -->
+  <!-- JS -->
   <script>
-    const checkboxes = document.querySelectorAll('.attendance-checkbox');
-    const countDisplay = document.getElementById('attendance-count');
+    const tabContainer = document.getElementById("tab-container");
+    const contentContainer = document.getElementById("content-container");
+    const addClassBtn = document.getElementById("add-class");
+    const datePicker = document.getElementById("date-picker");
+    const exportBtn = document.getElementById("export-excel");
+    let classCount = 1;
+    let currentDate = new Date().toISOString().split("T")[0]; // 預設今天日期
+    datePicker.value = currentDate;
 
-    function updateCount() {
-      const count = Array.from(checkboxes).filter(cb => cb.checked).length;
-      countDisplay.textContent = count;
+    // 🔹 社員名單
+    const members = [
+      "10112 許紘瑞","10410 黃浩恩","10421 白雨晨","10512 陳冠廷","10527 梁瑞紗",
+      "10803 陳韋曄","10901 王翊宸","10909 張智翔","10916 劉添淳","11017 謝雨泓",
+      "11105 張博凱","11511 郭兆崴","11514 黃家宏","11603 李翊愷","11714 戴旭君",
+      "20103 周元凱","20113 藍宇恩","20237 鄧敏翎","20335 蔡維妮","20508 李文凱",
+      "20618 許德浩","20620 陳奕嘉","20625 劉宸廷","20702 呂祁叡","20715 陳俊睿",
+      "20907 邱彥叡","20918 黃友頡","20934 韓怡萱","21016 黃子宸","21315 蕭川閔",
+      "21605 李緒恆","21606 洪子皓","21629 游閔喬","21703 何家濬"
+    ];
+
+    // 建立一個堂數的點名表
+    function createClassTab(num) {
+      const tabId = "class" + num;
+
+      // Tab 按鈕
+      if (!document.querySelector(`[data-tab="${tabId}"]`)) {
+        const newTab = document.createElement("button");
+        newTab.className = "tab-btn bg-green-700 px-4 py-2 rounded";
+        newTab.dataset.tab = tabId;
+        newTab.textContent = `第${num}堂課`;
+        tabContainer.appendChild(newTab);
+      }
+
+      // 表格內容
+      const newContent = document.createElement("div");
+      newContent.id = tabId;
+      newContent.className = "tab-content" + (num === 1 ? " active" : "");
+      let rows = "";
+      members.forEach(m => {
+        rows += `
+          <tr>
+            <td class="p-2">${m}</td>
+            <td class="p-2 text-center"><input type="checkbox" class="attendance-${num}"></td>
+          </tr>
+        `;
+      });
+      newContent.innerHTML = `
+        <table class="w-full bg-green-800 text-white rounded shadow mb-2">
+          <thead>
+            <tr class="bg-green-700">
+              <th class="p-2 text-left">姓名</th>
+              <th class="p-2 text-center">出席</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        出席人數：<span id="count-${num}" class="text-yellow-300 font-bold">0</span> 人
+      `;
+      contentContainer.appendChild(newContent);
+
+      // 出勤計算
+      setupAttendance(`attendance-${num}`, `count-${num}`);
     }
 
-    checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+    // 出勤計算
+    function setupAttendance(className, counterId) {
+      const checkboxes = document.querySelectorAll("." + className);
+      const countDisplay = document.getElementById(counterId);
+
+      function updateCount() {
+        const count = Array.from(checkboxes).filter(cb => cb.checked).length;
+        countDisplay.textContent = count;
+        saveData();
+      }
+
+      checkboxes.forEach(cb => cb.addEventListener("change", updateCount));
+    }
+
+    // 出勤資料存 localStorage
+    function saveData() {
+      const data = {};
+      document.querySelectorAll(".tab-content").forEach((tab, index) => {
+        const checkboxes = tab.querySelectorAll("input[type=checkbox]");
+        data["class" + (index+1)] = Array.from(checkboxes).map(cb => cb.checked);
+      });
+      localStorage.setItem("attendance-" + currentDate, JSON.stringify(data));
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem("attendance-" + currentDate);
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      Object.keys(data).forEach(classId => {
+        const checkboxes = document.querySelectorAll("." + classId.replace("class", "attendance-"));
+        checkboxes.forEach((cb, i) => {
+          cb.checked = data[classId][i] || false;
+        });
+      });
+      updateAllCounts();
+    }
+
+    function updateAllCounts() {
+      for (let i = 1; i <= classCount; i++) {
+        const checkboxes = document.querySelectorAll(".attendance-" + i);
+        const countDisplay = document.getElementById("count-" + i);
+        if (countDisplay) {
+          const count = Array.from(checkboxes).filter(cb => cb.checked).length;
+          countDisplay.textContent = count;
+        }
+      }
+    }
+
+    // Tab 切換
+    tabContainer.addEventListener("click", e => {
+      if (e.target.classList.contains("tab-btn")) {
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("bg-yellow-500"));
+        document.getElementById(e.target.dataset.tab).classList.add("active");
+        e.target.classList.add("bg-yellow-500");
+      }
+    });
+
+    // 新增堂數
+    addClassBtn.addEventListener("click", () => {
+      classCount++;
+      createClassTab(classCount);
+    });
+
+    // 切換日期
+    datePicker.addEventListener("change", () => {
+      currentDate = datePicker.value;
+      document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+      updateAllCounts();
+      loadData();
+    });
+
+    // 匯出 Excel
+    exportBtn.addEventListener("click", () => {
+      const rows = [["日期", currentDate], [], ["堂數", "姓名", "出席"]];
+      for (let i = 1; i <= classCount; i++) {
+        const tab = document.getElementById("class" + i);
+        if (!tab) continue;
+        const trs = tab.querySelectorAll("tbody tr");
+        trs.forEach(tr => {
+          const name = tr.querySelector("td").innerText;
+          const checked = tr.querySelector("input").checked ? "✔️" : "❌";
+          rows.push([`第${i}堂課`, name, checked]);
+        });
+        rows.push([]);
+      }
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "出缺勤");
+      XLSX.writeFile(wb, `出缺勤_${currentDate}.xlsx`);
+    });
+
+    // 預設建立第一堂課 + 載入資料
+    createClassTab(1);
+    loadData();
   </script>
 </body>
 </html>
-
-
