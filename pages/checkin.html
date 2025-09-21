@@ -4,18 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>社課簽到 | 內湖高中軍武社</title>
-
-  <!-- Tailwind CSS v3 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 字體 -->
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-    }
-    h1, h2, h3 {
-      font-family: 'Oswald', sans-serif;
-    }
+    body { font-family: 'Roboto', sans-serif; }
+    h1, h2, h3 { font-family: 'Oswald', sans-serif; }
   </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -26,54 +19,146 @@
     <nav class="flex flex-wrap gap-2 justify-center md:justify-end text-sm md:text-base">
       <a href="../index.html" class="hover:text-yellow-300">首頁</a>
       <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
-      <a href="attendance.html" class="text-yellow-300 font-bold">出缺勤</a>
+      <a href="checkin.html" class="text-yellow-300 font-bold">社課簽到</a>
       <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
       <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
       <a href="about.html" class="hover:text-yellow-300">關於我們</a>
     </nav>
   </header>
 
-  <!-- 簽到表單 -->
+  <!-- 📋 簽到表單 -->
   <section class="py-10 px-4 md:px-8 max-w-2xl mx-auto">
-    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">📝 社課簽到</h2>
-    <form class="space-y-4">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">📋 社課簽到</h2>
+    <form id="checkinForm" class="space-y-4">
       <div>
         <label class="block mb-1 text-sm md:text-base">姓名</label>
-        <input type="text" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" placeholder="請輸入姓名">
+        <input type="text" id="name" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" placeholder="請輸入姓名">
       </div>
       <div>
-        <label class="block mb-1 text-sm md:text-base">學號</label>
-        <input type="text" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" placeholder="請輸入學號">
+        <label class="block mb-1 text-sm md:text-base">班級座號</label>
+        <input type="text" id="id" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" placeholder="例如：20620">
       </div>
       <div>
-        <label class="block mb-1 text-sm md:text-base">備註</label>
-        <textarea class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" rows="3" placeholder="可填寫請假原因或其他事項"></textarea>
+        <label class="block mb-1 text-sm md:text-base">備註（請假或晚到原因）</label>
+        <textarea id="note" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 text-sm md:text-base" rows="3" placeholder="可填寫請假原因或其他事項"></textarea>
       </div>
-      <button type="submit" class="bg-yellow-400 text-black font-semibold px-6 py-2 rounded hover:bg-yellow-300 transition transform hover:scale-105 text-sm md:text-base">送出簽到</button>
+      <button type="submit" class="bg-yellow-400 text-black font-semibold px-6 py-2 rounded hover:bg-yellow-300 transition transform hover:scale-105 text-sm md:text-base">✅ 簽到</button>
     </form>
   </section>
 
-  <!-- 已簽到名單 -->
+  <!-- 🧾 已簽到名單 -->
   <section class="py-10 px-4 md:px-8 max-w-4xl mx-auto">
-    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">✅ 已簽到名單</h2>
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">🧾 已簽到名單</h2>
     <div class="overflow-x-auto">
       <table class="w-full table-auto text-sm md:text-base bg-gray-800 rounded">
         <thead class="bg-green-900 text-yellow-300">
           <tr>
             <th class="px-4 py-2 text-left">姓名</th>
-            <th class="px-4 py-2 text-left">學號</th>
+            <th class="px-4 py-2 text-left">班級座號</th>
             <th class="px-4 py-2 text-left">備註</th>
           </tr>
+        </thead>
+        <tbody class="text-gray-200" id="signedListBody"></tbody>
       </table>
     </div>
-    <div class="text-right mt-4">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">匯出名單</button>
+    <div class="text-right mt-4 flex justify-end gap-4">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">📤 匯出紀錄</button>
+      <button id="clearBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm md:text-base">🧹 清除簽到</button>
     </div>
   </section>
 
+  <!-- ❌ 未簽到名單 -->
+  <section class="py-10 px-4 md:px-8 max-w-4xl mx-auto">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">❌ 未簽到名單</h2>
+    <table class="w-full table-auto text-sm md:text-base bg-gray-800 rounded">
+      <thead class="bg-red-900 text-yellow-300">
+        <tr>
+          <th class="px-4 py-2 text-left">姓名</th>
+          <th class="px-4 py-2 text-left">班級座號</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-200" id="unsignedListBody"></tbody>
+    </table>
+  </section>
+
+  <!-- 🧠 JavaScript -->
+  <script>
+    const fullList = [
+    { id: "10112", name: "許紘瑞" }, { id: "10410", name: "黃浩恩" }, { id: "10421", name: "白雨晨" },
+    { id: "10512", name: "陳冠廷" }, { id: "10527", name: "梁瑞紗" }, { id: "10803", name: "江政儫" },
+    { id: "10901", name: "王翊宸" }, { id: "10909", name: "張智翔" }, { id: "10916", name: "劉添淳" },
+    { id: "11017", name: "謝宇泓" }, { id: "11105", name: "張博凱" }, { id: "11511", name: "郭兆威" },
+    { id: "11514", name: "黃家宏" }, { id: "11603", name: "李翊愷" }, { id: "11714", name: "戴旭君" },
+    { id: "20103", name: "周元凱" }, { id: "20113", name: "藍宇恩" }, { id: "20237", name: "鄧敏翎" },
+    { id: "20335", name: "蔡維妮" }, { id: "20508", name: "李文凱" }, { id: "20522", name: "楊恩愷" },
+    { id: "20618", name: "許德浩" }, { id: "20620", name: "陳奕嘉" }, { id: "20625", name: "劉宸廷" },
+    { id: "20702", name: "呂祁叡" }, { id: "20715", name: "陳俊睿" }, { id: "20907", name: "邱彥叡" },
+    { id: "20918", name: "黃友頡" }, { id: "20934", name: "韓怡萱" }, { id: "21016", name: "黃子宸" },
+    { id: "21315", name: "蕭川閔" }, { id: "21605", name: "李緒恆" }, { id: "21606", name: "洪子皓" },
+    { id: "21629", name: "游閔喬" }, { id: "21703", name: "何家濬" }
+    ];
+
+    let signedList = [];
+
+    const signedBody = document.getElementById("signedListBody");
+    const unsignedBody = document.getElementById("unsignedListBody");
+    const form = document.getElementById("checkinForm");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function renderLists() {
+      signedBody.innerHTML = "";
+      unsignedBody.innerHTML = "";
+
+      signedList.forEach(person => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="px-4 py-2">${person.name}</td>
+          <td class="px-4 py-2">${person.id}</td>
+          <td class="px-4 py-2">${person.note || ""}</td>
+        `;
+        signedBody.appendChild(row);
+      });
+
+      const unsignedList = fullList.filter(full =>
+        !signedList.some(signed => signed.id === full.id)
+      );
+
+      unsignedList.forEach(person => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="px-4 py-2">${person.name}</td>
+          <td class="px-4 py-2">${person.id}</td>
+        `;
+        unsignedBody.appendChild(row);
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const id = document.getElementById("id").value.trim();
+      const note = document.getElementById("note").value.trim();
+
+      if (name && id) {
+        signedList.push({ name, id, note });
+        renderLists();
+        form.reset();
+      } else {
+        alert("請填寫姓名與班級座號");
+      }
+    });
+
+    clearBtn.addEventListener("click", function () {
+      signedList = [];
+      renderLists();
+    });
+
+    renderLists();
+  </script>
+
   <!-- 頁尾 -->
   <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
-    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+    &copy; 2025 內湖高中軍武社 | 設計者：陳奕嘉 | 本頁由幹部簽到系統自動生成
   </footer>
 </body>
 </html>
