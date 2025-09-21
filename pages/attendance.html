@@ -1,5 +1,5 @@
-<html lang="zh-Hant">
 <!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +7,6 @@
 
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- SheetJS (Excel 下載) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
     .tab-content { display: none; }
@@ -35,73 +33,26 @@
     <h2 class="text-3xl font-bold text-yellow-300 mb-4">✅ 出缺勤點名</h2>
 
     <!-- 日期選擇 -->
-    <div class="mb-6 flex items-center space-x-4">
-      <div>
-        <label for="date-picker" class="mr-2">選擇日期：</label>
-        <input type="date" id="date-picker" class="text-black px-2 py-1 rounded">
-      </div>
-      <button id="export-excel" class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-400">📂 匯出 Excel</button>
+    <div class="mb-4">
+      <label for="date-picker" class="mr-2">選擇日期：</label>
+      <input type="date" id="date-picker" class="text-black px-2 py-1 rounded">
     </div>
 
     <!-- Tabs -->
     <div id="tab-container" class="flex space-x-4 mb-6">
       <button class="tab-btn bg-green-700 px-4 py-2 rounded" data-tab="class1">第1堂課</button>
     </div>
-    <button id="add-class" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500 mb-4">➕ 新增堂數</button>
+
+    <!-- 控制按鈕 -->
+    <div class="mb-6 space-x-2">
+      <button id="add-class" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500">➕ 新增堂數</button>
+      <button id="clear-data" class="bg-red-600 px-4 py-2 rounded hover:bg-red-500">🗑 清除紀錄</button>
+    </div>
 
     <!-- Tab 內容容器 -->
-    <div id="content-container"></div>
-  </main>
-
-  <!-- JS -->
-  <script>
-    const tabContainer = document.getElementById("tab-container");
-    const contentContainer = document.getElementById("content-container");
-    const addClassBtn = document.getElementById("add-class");
-    const datePicker = document.getElementById("date-picker");
-    const exportBtn = document.getElementById("export-excel");
-    let classCount = 1;
-    let currentDate = new Date().toISOString().split("T")[0]; // 預設今天日期
-    datePicker.value = currentDate;
-
-    // 🔹 社員名單
-    const members = [
-      "10112 許紘瑞","10410 黃浩恩","10421 白雨晨","10512 陳冠廷","10527 梁瑞紗",
-      "10803 陳韋曄","10901 王翊宸","10909 張智翔","10916 劉添淳","11017 謝雨泓",
-      "11105 張博凱","11511 郭兆崴","11514 黃家宏","11603 李翊愷","11714 戴旭君",
-      "20103 周元凱","20113 藍宇恩","20237 鄧敏翎","20335 蔡維妮","20508 李文凱",
-      "20618 許德浩","20620 陳奕嘉","20625 劉宸廷","20702 呂祁叡","20715 陳俊睿",
-      "20907 邱彥叡","20918 黃友頡","20934 韓怡萱","21016 黃子宸","21315 蕭川閔",
-      "21605 李緒恆","21606 洪子皓","21629 游閔喬","21703 何家濬"
-    ];
-
-    // 建立一個堂數的點名表
-    function createClassTab(num) {
-      const tabId = "class" + num;
-
-      // Tab 按鈕
-      if (!document.querySelector(`[data-tab="${tabId}"]`)) {
-        const newTab = document.createElement("button");
-        newTab.className = "tab-btn bg-green-700 px-4 py-2 rounded";
-        newTab.dataset.tab = tabId;
-        newTab.textContent = `第${num}堂課`;
-        tabContainer.appendChild(newTab);
-      }
-
-      // 表格內容
-      const newContent = document.createElement("div");
-      newContent.id = tabId;
-      newContent.className = "tab-content" + (num === 1 ? " active" : "");
-      let rows = "";
-      members.forEach(m => {
-        rows += `
-          <tr>
-            <td class="p-2">${m}</td>
-            <td class="p-2 text-center"><input type="checkbox" class="attendance-${num}"></td>
-          </tr>
-        `;
-      });
-      newContent.innerHTML = `
+    <div id="content-container">
+      <!-- 第1堂課 -->
+      <div id="class1" class="tab-content active">
         <table class="w-full bg-green-800 text-white rounded shadow mb-2">
           <thead>
             <tr class="bg-green-700">
@@ -109,18 +60,80 @@
               <th class="p-2 text-center">出席</th>
             </tr>
           </thead>
-          <tbody>${rows}</tbody>
+          <tbody>
+            <tr>
+              <td class="p-2">20620 陳奕嘉</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-1"></td>
+            </tr>
+            <tr>
+              <td class="p-2">20934 韓怡萱</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-1"></td>
+            </tr>
+          </tbody>
         </table>
-        出席人數：<span id="count-${num}" class="text-yellow-300 font-bold">0</span> 人
-      `;
-      contentContainer.appendChild(newContent);
+        出席人數：<span id="count-1" class="text-yellow-300 font-bold">0</span> 人
+      </div>
+    </div>
+  </main>
 
-      // 出勤計算
-      setupAttendance(`attendance-${num}`, `count-${num}`);
+  <!-- JS -->
+  <script>
+    const tabContainer = document.getElementById("tab-container");
+    const contentContainer = document.getElementById("content-container");
+    const addClassBtn = document.getElementById("add-class");
+    const clearBtn = document.getElementById("clear-data");
+    const datePicker = document.getElementById("date-picker");
+    let classCount = 1;
+    let currentDate = new Date().toISOString().split("T")[0];
+    datePicker.value = currentDate;
+
+    // 儲存到 LocalStorage（依日期）
+    function saveData() {
+      const data = [];
+      for (let i = 1; i <= classCount; i++) {
+        const checkboxes = document.querySelectorAll(`.attendance-${i}`);
+        const states = Array.from(checkboxes).map(cb => cb.checked);
+        data.push({ classId: i, states });
+      }
+      localStorage.setItem("attendance-" + currentDate, JSON.stringify(data));
+      localStorage.setItem("classCount-" + currentDate, classCount);
     }
 
+    // 載入 LocalStorage
+    function loadData() {
+      const savedCount = localStorage.getItem("classCount-" + currentDate);
+      if (savedCount) {
+        classCount = parseInt(savedCount);
+        for (let i = 2; i <= classCount; i++) {
+          createClass(i);
+        }
+      }
+      const savedData = JSON.parse(localStorage.getItem("attendance-" + currentDate) || "[]");
+      savedData.forEach(d => {
+        const checkboxes = document.querySelectorAll(`.attendance-${d.classId}`);
+        d.states.forEach((state, idx) => {
+          if (checkboxes[idx]) checkboxes[idx].checked = state;
+        });
+        updateCount(d.classId);
+      });
+    }
+
+    // Tab 切換
+    function switchTab(tabId, tabBtn) {
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("bg-yellow-500"));
+      document.getElementById(tabId).classList.add("active");
+      tabBtn.classList.add("bg-yellow-500");
+    }
+
+    tabContainer.addEventListener("click", e => {
+      if (e.target.classList.contains("tab-btn")) {
+        switchTab(e.target.dataset.tab, e.target);
+      }
+    });
+
     // 出勤計算
-    function setupAttendance(className, counterId) {
+    function setupAttendance(className, counterId, classId) {
       const checkboxes = document.querySelectorAll("." + className);
       const countDisplay = document.getElementById(counterId);
 
@@ -131,88 +144,117 @@
       }
 
       checkboxes.forEach(cb => cb.addEventListener("change", updateCount));
+      updateCount();
     }
 
-    // 出勤資料存 localStorage
-    function saveData() {
-      const data = {};
-      document.querySelectorAll(".tab-content").forEach((tab, index) => {
-        const checkboxes = tab.querySelectorAll("input[type=checkbox]");
-        data["class" + (index+1)] = Array.from(checkboxes).map(cb => cb.checked);
-      });
-      localStorage.setItem("attendance-" + currentDate, JSON.stringify(data));
+    function updateCount(classId) {
+      const checkboxes = document.querySelectorAll(`.attendance-${classId}`);
+      const countDisplay = document.getElementById(`count-${classId}`);
+      const count = Array.from(checkboxes).filter(cb => cb.checked).length;
+      countDisplay.textContent = count;
     }
 
-    function loadData() {
-      const saved = localStorage.getItem("attendance-" + currentDate);
-      if (!saved) return;
-      const data = JSON.parse(saved);
-      Object.keys(data).forEach(classId => {
-        const checkboxes = document.querySelectorAll("." + classId.replace("class", "attendance-"));
-        checkboxes.forEach((cb, i) => {
-          cb.checked = data[classId][i] || false;
-        });
-      });
-      updateAllCounts();
-    }
+    // 建立新堂數
+    function createClass(num) {
+      const tabId = "class" + num;
 
-    function updateAllCounts() {
-      for (let i = 1; i <= classCount; i++) {
-        const checkboxes = document.querySelectorAll(".attendance-" + i);
-        const countDisplay = document.getElementById("count-" + i);
-        if (countDisplay) {
-          const count = Array.from(checkboxes).filter(cb => cb.checked).length;
-          countDisplay.textContent = count;
-        }
-      }
-    }
+      const newTab = document.createElement("button");
+      newTab.className = "tab-btn bg-green-700 px-4 py-2 rounded";
+      newTab.dataset.tab = tabId;
+      newTab.textContent = `第${num}堂課`;
+      tabContainer.appendChild(newTab);
 
-    // Tab 切換
-    tabContainer.addEventListener("click", e => {
-      if (e.target.classList.contains("tab-btn")) {
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("bg-yellow-500"));
-        document.getElementById(e.target.dataset.tab).classList.add("active");
-        e.target.classList.add("bg-yellow-500");
-      }
-    });
+      const newContent = document.createElement("div");
+      newContent.id = tabId;
+      newContent.className = "tab-content";
+      newContent.innerHTML = `
+        <table class="w-full bg-green-800 text-white rounded shadow mb-2">
+          <thead>
+            <tr class="bg-green-700">
+              <th class="p-2 text-left">姓名</th>
+              <th class="p-2 text-center">出席</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-2">20620 陳奕嘉</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-${num}"></td>
+            </tr>
+            <tr>
+              <td class="p-2">20934 韓怡萱</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-${num}"></td>
+            </tr>
+          </tbody>
+        </table>
+        出席人數：<span id="count-${num}" class="text-yellow-300 font-bold">0</span> 人
+      `;
+      contentContainer.appendChild(newContent);
+
+      setupAttendance(`attendance-${num}`, `count-${num}`, num);
+    }
 
     // 新增堂數
     addClassBtn.addEventListener("click", () => {
       classCount++;
-      createClassTab(classCount);
+      createClass(classCount);
+      saveData();
     });
 
-    // 切換日期
+    // 清除紀錄
+    clearBtn.addEventListener("click", () => {
+      if (confirm("確定要清除這個日期的出缺勤紀錄嗎？")) {
+        localStorage.removeItem("attendance-" + currentDate);
+        localStorage.removeItem("classCount-" + currentDate);
+        location.reload();
+      }
+    });
+
+    // 日期切換
     datePicker.addEventListener("change", () => {
       currentDate = datePicker.value;
-      document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-      updateAllCounts();
+      // 清空畫面
+      contentContainer.innerHTML = '';
+      tabContainer.innerHTML = '';
+      classCount = 1;
+      // 重建第一堂課
+      const firstTab = document.createElement("button");
+      firstTab.className = "tab-btn bg-green-700 px-4 py-2 rounded";
+      firstTab.dataset.tab = "class1";
+      firstTab.textContent = "第1堂課";
+      tabContainer.appendChild(firstTab);
+
+      const firstContent = document.createElement("div");
+      firstContent.id = "class1";
+      firstContent.className = "tab-content active";
+      firstContent.innerHTML = `
+        <table class="w-full bg-green-800 text-white rounded shadow mb-2">
+          <thead>
+            <tr class="bg-green-700">
+              <th class="p-2 text-left">姓名</th>
+              <th class="p-2 text-center">出席</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-2">20620 陳奕嘉</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-1"></td>
+            </tr>
+            <tr>
+              <td class="p-2">20934 韓怡萱</td>
+              <td class="p-2 text-center"><input type="checkbox" class="attendance-1"></td>
+            </tr>
+          </tbody>
+        </table>
+        出席人數：<span id="count-1" class="text-yellow-300 font-bold">0</span> 人
+      `;
+      contentContainer.appendChild(firstContent);
+
+      setupAttendance("attendance-1", "count-1", 1);
       loadData();
     });
 
-    // 匯出 Excel
-    exportBtn.addEventListener("click", () => {
-      const rows = [["日期", currentDate], [], ["堂數", "姓名", "出席"]];
-      for (let i = 1; i <= classCount; i++) {
-        const tab = document.getElementById("class" + i);
-        if (!tab) continue;
-        const trs = tab.querySelectorAll("tbody tr");
-        trs.forEach(tr => {
-          const name = tr.querySelector("td").innerText;
-          const checked = tr.querySelector("input").checked ? "✔️" : "❌";
-          rows.push([`第${i}堂課`, name, checked]);
-        });
-        rows.push([]);
-      }
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "出缺勤");
-      XLSX.writeFile(wb, `出缺勤_${currentDate}.xlsx`);
-    });
-
-    // 預設建立第一堂課 + 載入資料
-    createClassTab(1);
+    // 初始化
+    setupAttendance("attendance-1", "count-1", 1);
     loadData();
   </script>
 </body>
