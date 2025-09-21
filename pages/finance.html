@@ -23,19 +23,23 @@
   </style>
 </head>
 <body class="bg-gray-900 text-white">
-
-  <!-- 導覽列 -->
-  <header class="bg-green-900 p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
-    <nav class="space-x-4">
-      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
-      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
-      <a href="attendance.html" class="hover:text-yellow-300">出缺勤</a>
-      <a href="finance.html" class="text-yellow-300 font-bold">財務紀錄</a>
-      <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
-      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
-    </nav>
-  </header>
+<header class="bg-green-900 p-4 flex justify-between items-center">
+  <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+  <div class="relative">
+    <button id="menuBtn" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 font-semibold text-sm md:text-base">
+      ☰ 選單
+    </button>
+    <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg hidden z-50">
+      <a href="../index.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🏠 首頁</a>
+      <a href="map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
+      <a href="schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
+      <a href="checkin.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📝 社課簽到</a>
+      <a href="finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
+      <a href="knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
+      <a href="about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
+    </div>
+  </div>
+</header>
 
   <!-- 主內容 -->
   <main class="p-8">
@@ -74,7 +78,20 @@
       <canvas id="financeChart"></canvas>
     </div>
   </main>
+  <script>
+    const menuBtn = document.getElementById("menuBtn");
+    const menuList = document.getElementById("menuList");
 
+    menuBtn.addEventListener("click", () => {
+      menuList.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+        menuList.classList.add("hidden");
+      }
+    });
+  </script>
   <!-- 頁尾 -->
   <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
     &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
@@ -109,4 +126,5 @@
   </script>
 </body>
 </html>
+
 
