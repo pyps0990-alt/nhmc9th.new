@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>知識分享 | 內湖高中軍武社</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- SimpleMDE Markdown 編輯器 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.js"></script>
+
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    h1 {
+      font-family: 'Oswald', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- 導覽列 -->
+  <header class="bg-green-900 p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+    <nav class="space-x-4">
+      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
+      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
+      <a href="attendance.html" class="hover:text-yellow-300">出缺勤</a>
+      <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
+      <a href="knowledge.html" class="text-yellow-300 font-bold">知識分享</a>
+      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
+    </nav>
+  </header>
+
+  <!-- 主內容 -->
+  <main class="p-8">
+    <h2 class="text-3xl font-bold text-yellow-300 mb-4">📚 知識分享</h2>
+
+    <label for="editor" class="block mb-2 text-lg">撰寫新文章：</label>
+    <textarea id="editor"></textarea>
+
+    <button class="mt-4 bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300" onclick="saveArticle()">儲存文章</button>
+
+    <div class="mt-8">
+      <h3 class="text-2xl font-bold text-yellow-300 mb-2">🗂 已儲存文章</h3>
+      <ul id="article-list" class="space-y-2"></ul>
+    </div>
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
+
+  <!-- 初始化 Markdown 編輯器 + 儲存功能 -->
+  <script>
+    const simplemde = new SimpleMDE({ element: document.getElementById("editor") });
+    const articleList = document.getElementById("article-list");
+
+    function saveArticle() {
+      const content = simplemde.value();
+      const item = document.createElement("li");
+      item.className = "bg-green-800 p-4 rounded shadow";
+      item.innerHTML = `<strong>文章：</strong><br>${marked(content)}`;
+      articleList.appendChild(item);
+      simplemde.value(""); // 清空編輯器
+    }
+  </script>
+
+  <!-- Markdown 轉 HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新增活動 | 內湖高中軍武社</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js"></script>
+  <script src="../js/firebase-config.js"></script>
+
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    h1, h2 { font-family: 'Oswald', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+  <div class="bg-green-800 p-8 rounded shadow w-full max-w-md">
+    <h2 class="text-2xl font-bold text-yellow-300 mb-4">📅 新增活動</h2>
+
+    <label class="block mb-2">活動名稱：</label>
+    <input type="text" id="activityName" placeholder="例如：軍事演練" class="w-full p-2 mb-4 text-black rounded" />
+
+    <label class="block mb-2">活動日期：</label>
+    <input type="date" id="activityDate" class="w-full p-2 mb-4 text-black rounded" />
+
+    <button onclick="createActivity()" class="w-full bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">建立活動</button>
+    <p id="status" class="mt-4 text-green-300"></p>
+  </div>
+
+  <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    auth.onAuthStateChanged(user => {
+      if (!user) window.location.href = "../login.html";
+    });
+
+    function createActivity() {
+      const name = document.getElementById("activityName").value.trim();
+      const date = document.getElementById("activityDate").value;
+      const id = `${date}-${name}`;
+
+      if (!name || !date) {
+        document.getElementById("status").textContent = "請填寫完整活動資訊";
+        return;
+      }
+
+      db.collection("activities").doc(id).set({
+        name,
+        date,
+        createdBy: auth.currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        document.getElementById("status").textContent = "✅ 活動已建立成功！";
+        document.getElementById("activityName").value = "";
+        document.getElementById("activityDate").value = "";
+      });
+    }
+  </script>
+</body>
+</html>
+

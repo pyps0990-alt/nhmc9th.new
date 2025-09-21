@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>財務紀錄 | 內湖高中軍武社</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    h1 {
+      font-family: 'Oswald', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- 導覽列 -->
+  <header class="bg-green-900 p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+    <nav class="space-x-4">
+      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
+      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
+      <a href="attendance.html" class="hover:text-yellow-300">出缺勤</a>
+      <a href="finance.html" class="text-yellow-300 font-bold">財務紀錄</a>
+      <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
+      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
+    </nav>
+  </header>
+
+  <!-- 主內容 -->
+  <main class="p-8">
+    <h2 class="text-3xl font-bold text-yellow-300 mb-4">💰 財務紀錄</h2>
+
+    <!-- 收支表格 -->
+    <table class="w-full bg-green-800 text-white rounded shadow mb-6">
+      <thead>
+        <tr class="bg-green-700">
+          <th class="p-2 text-left">項目</th>
+          <th class="p-2 text-center">類型</th>
+          <th class="p-2 text-right">金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2">社費收入</td>
+          <td class="p-2 text-center">收入</td>
+          <td class="p-2 text-right">NT$ 3,000</td>
+        </tr>
+        <tr>
+          <td class="p-2">軍帽採購</td>
+          <td class="p-2 text-center">支出</td>
+          <td class="p-2 text-right">NT$ 1,200</td>
+        </tr>
+        <tr>
+          <td class="p-2">活動飲料</td>
+          <td class="p-2 text-center">支出</td>
+          <td class="p-2 text-right">NT$ 600</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 收支圖表 -->
+    <div class="bg-white rounded p-4">
+      <canvas id="financeChart"></canvas>
+    </div>
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
+
+  <!-- Chart.js 初始化 -->
+  <script>
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    const financeChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['收入', '支出'],
+        datasets: [{
+          label: '財務分布',
+          data: [3000, 1800],
+          backgroundColor: ['#C0A96A', '#FF4C4C'],
+          borderColor: '#1C1C1C',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#000'
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

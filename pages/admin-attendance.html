@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>出缺勤後台 | 內湖高中軍武社</title>
+<section id="welcome" class="mb-6 text-yellow-300 text-lg font-semibold">
+  👤 歡迎回來，幹部！
+</section>
+
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js"></script>
+
+  <!-- Firebase 初始化設定 -->
+  <script src="../js/firebase-config.js"></script>
+
+  <!-- 出缺勤模組化邏輯 -->
+  <script src="../js/attendance.js" defer></script>
+
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    h1, h2 { font-family: 'Oswald', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- 導覽列 -->
+  <header class="bg-green-900 p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-yellow-400">軍武社幹部後台</h1>
+    <nav class="space-x-4">
+      <a href="../index.html" class="hover:text-yellow-300">回首頁</a>
+      <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded hover:bg-red-500">登出</button>
+    </nav>
+  </header>
+
+  <!-- 主內容 -->
+  <main class="p-8">
+    <h2 class="text-3xl font-bold text-yellow-300 mb-4">✅ 出缺勤管理</h2>
+
+    <!-- 活動選擇器 -->
+    <div class="mb-6">
+      <label for="activity" class="block mb-2 text-lg">選擇活動：</label>
+      <select id="activity" class="p-2 rounded text-black" onchange="loadAttendance()">
+        <!-- 活動選項由 JS 動態載入 -->
+      </select>
+    </div>
+
+    <!-- 新增社員 -->
+    <div class="mb-6">
+      <input type="text" id="newName" placeholder="輸入社員姓名" class="p-2 rounded text-black" />
+      <button onclick="addMember()" class="ml-2 bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">新增</button>
+    </div>
+
+    <!-- 出缺勤表格 -->
+    <table class="w-full bg-green-800 text-white rounded shadow mb-6">
+      <thead>
+        <tr class="bg-green-700">
+          <th class="p-2 text-left">姓名</th>
+          <th class="p-2 text-center">出席</th>
+          <th class="p-2 text-center">操作</th>
+        </tr>
+      </thead>
+      <tbody id="admin-table"></tbody>
+    </table>
+
+    <!-- 出席率圖表 -->
+    <div class="bg-white rounded p-4 mb-8">
+      <canvas id="attendanceChart"></canvas>
+    </div>
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
+</body>
+</html>

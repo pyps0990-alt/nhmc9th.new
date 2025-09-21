@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>幹部登入 | 內湖高中軍武社</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    h1 { font-family: 'Oswald', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+  <div class="bg-green-800 p-8 rounded shadow w-full max-w-md text-center">
+    <h1 class="text-2xl font-bold text-yellow-300 mb-6">🔐 幹部登入</h1>
+
+    <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-4 rounded text-black" />
+    <input type="password" id="password" placeholder="密碼" class="w-full p-2 mb-4 rounded text-black" />
+
+    <button onclick="login()" class="w-full bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition">登入</button>
+    <p id="error" class="text-red-500 mt-4"></p>
+  </div>
+
+  <script>
+    const auth = firebase.auth();
+
+    function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          window.location.href = "pages/admin-attendance.html";
+        })
+        .catch(error => {
+          document.getElementById("error").textContent = "登入失敗：" + error.message;
+        });
+    }
+  </script>
+</body>
+</html>
+
+
