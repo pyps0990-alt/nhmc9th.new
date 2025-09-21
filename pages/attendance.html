@@ -57,17 +57,17 @@ datePicker.value = currentDate;
 let classCount = 1;
 
 // 🔹 社員名單
-    const members = [
-      "10112 許紘瑞","10410 黃浩恩","10421 白雨晨","10512 陳冠廷","10527 梁瑞紗",
-      "10803 陳韋曄","10901 王翊宸","10909 張智翔","10916 劉添淳","11017 謝雨泓",
-      "11105 張博凱","11511 郭兆崴","11514 黃家宏","11603 李翊愷","11714 戴旭君",
-      "20103 周元凱","20113 藍宇恩","20237 鄧敏翎","20335 蔡維妮","20508 李文凱",
-      "20618 許德浩","20620 陳奕嘉","20625 劉宸廷","20702 呂祁叡","20715 陳俊睿",
-      "20907 邱彥叡","20918 黃友頡","20934 韓怡萱","21016 黃子宸","21315 蕭川閔",
-      "21605 李緒恆","21606 洪子皓","21629 游閔喬","21703 何家濬"
-    ];
+const members = [
+  "10112 許紘瑞","10410 黃浩恩","10421 白雨晨","10512 陳冠廷","10527 梁瑞紗",
+  "10803 陳韋曄","10901 王翊宸","10909 張智翔","10916 劉添淳","11017 謝雨泓",
+  "11105 張博凱","11511 郭兆崴","11514 黃家宏","11603 李翊愷","11714 戴旭君",
+  "20103 周元凱","20113 藍宇恩","20237 鄧敏翎","20335 蔡維妮","20508 李文凱",
+  "20618 許德浩","20620 陳奕嘉","20625 劉宸廷","20702 呂祁叡","20715 陳俊睿",
+  "20907 邱彥叡","20918 黃友頡","20934 韓怡萱","21016 黃子宸","21315 蕭川閔",
+  "21605 李緒恆","21606 洪子皓","21629 游閔喬","21703 何家濬"
+];
 
-// 建立單堂課表格
+// 🔹 建立單堂課表格
 function createClass(num){
   const tabId = "class"+num;
 
@@ -104,9 +104,12 @@ function createClass(num){
 
   contentContainer.appendChild(newContent);
   setupAttendance(`attendance-${num}`, `count-${num}`, num);
+
+  // 🔹 初始化第一堂課 tab 為 active
+  if(num === 1) switchTab(tabId, newTab);
 }
 
-// Tab 切換
+// 🔹 Tab 切換
 function switchTab(tabId, tabBtn){
   document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(t=>t.classList.remove("bg-yellow-500"));
@@ -120,7 +123,7 @@ tabContainer.addEventListener("click", e=>{
   }
 });
 
-// 出勤計算 & 同步 Google Sheet
+// 🔹 出勤計算 & 同步 Google Sheet
 function setupAttendance(className, counterId, classNum){
   const checkboxes = document.querySelectorAll("."+className);
   const countDisplay = document.getElementById(counterId);
@@ -142,26 +145,26 @@ function setupAttendance(className, counterId, classNum){
   loadAttendance(classNum);
 }
 
-// 讀取 Google Sheet 資料
+// 🔹 讀取 Google Sheet 資料
 async function loadAttendance(classNum){
   const res = await fetch(`${API_URL}?date=${currentDate}`);
   const data = await res.json();
   const checkboxes = document.querySelectorAll(`.attendance-${classNum}`);
   checkboxes.forEach(cb=>{
-    const record = data.find(r=>r.class==classNum && r.name==cb.dataset.name);
+    const record = data.find(r=>Number(r.class)===classNum && r.name===cb.dataset.name);
     if(record) cb.checked = record.attendance==1;
   });
   const count = Array.from(checkboxes).filter(c=>c.checked).length;
   document.getElementById(`count-${classNum}`).textContent = count;
 }
 
-// 新增堂數
+// 🔹 新增堂數
 addClassBtn.addEventListener("click", ()=>{
   classCount++;
   createClass(classCount);
 });
 
-// 清除紀錄
+// 🔹 清除紀錄
 clearBtn.addEventListener("click", ()=>{
   if(confirm("確定清除這個日期的出缺勤紀錄嗎？")){
     fetch(API_URL,{
@@ -172,7 +175,7 @@ clearBtn.addEventListener("click", ()=>{
   }
 });
 
-// 日期切換
+// 🔹 日期切換
 datePicker.addEventListener("change", ()=>{
   currentDate = datePicker.value;
   contentContainer.innerHTML = "";
@@ -181,7 +184,7 @@ datePicker.addEventListener("change", ()=>{
   createClass(1);
 });
 
-// 匯出 CSV
+// 🔹 匯出 CSV
 exportBtn.addEventListener("click", ()=>{
   let csv = "堂數,姓名,出席\n";
   for(let c=1;c<=classCount;c++){
@@ -198,7 +201,7 @@ exportBtn.addEventListener("click", ()=>{
   a.click();
 });
 
-// 初始化
+// 🔹 初始化第一堂課
 createClass(1);
 </script>
 </body>
