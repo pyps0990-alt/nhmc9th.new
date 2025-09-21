@@ -6,25 +6,16 @@
 <title>內湖高中軍武社</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-/* 背景畫布全屏 */
-#bgCanvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-10; }
-
-/* 標題初始樣式 */
-#mainTitle { opacity:0; transform: scale(0.5); }
-
 /* 按鈕 hover 動畫 */
 .btn { transition: all 0.3s ease; }
 .btn:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
 
-/* 導覽列 */
+/* 導覽列 hover */
 nav a { transition: all 0.3s ease; }
 nav a:hover { color: #FACC15; }
 </style>
 </head>
 <body class="bg-gray-900 text-white overflow-x-hidden">
-
-<!-- 背景粒子 -->
-<canvas id="bgCanvas"></canvas>
 
 <!-- 導覽列 -->
 <header class="bg-green-900 p-4 flex justify-between items-center fixed top-0 w-full z-20">
@@ -41,8 +32,8 @@ nav a:hover { color: #FACC15; }
 
 <!-- 主內容 -->
 <div class="flex flex-col items-center justify-center min-h-screen text-center px-4 pt-32">
-  <h1 id="mainTitle" class="text-5xl font-bold text-yellow-400 mb-6">內湖高中軍武社</h1>
-  <p id="slogan" class="text-xl text-yellow-300 mb-10"></p>
+  <h1 class="text-5xl font-bold text-yellow-400 mb-6">內湖高中軍武社</h1>
+  <p class="text-xl text-yellow-300 mb-10">歡迎來到我們的軍武社系統</p>
   <div class="space-x-4">
     <a href="attendance.html" class="btn bg-green-700 px-6 py-3 rounded text-white font-bold hover:bg-green-600">出缺勤系統</a>
     <a href="schedule.html" class="btn bg-blue-700 px-6 py-3 rounded text-white font-bold hover:bg-blue-600">活動排程</a>
@@ -54,61 +45,6 @@ nav a:hover { color: #FACC15; }
 <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400 mt-10">
   &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
 </footer>
-
-<script>
-// ---------- 背景粒子 ----------
-const canvas = document.getElementById("bgCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const particles = [];
-for(let i=0;i<120;i++){
-  particles.push({
-    x: Math.random()*canvas.width,
-    y: Math.random()*canvas.height,
-    r: Math.random()*2+1,
-    dx: (Math.random()-0.5)*0.5,
-    dy: (Math.random()-0.5)*0.5
-  });
-}
-
-function animate(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{
-    p.x += p.dx; p.y += p.dy;
-    if(p.x<0||p.x>canvas.width) p.dx*=-1;
-    if(p.y<0||p.y>canvas.height) p.dy*=-1;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle="rgba(255,255,255,0.6)";
-    ctx.fill();
-  });
-  requestAnimationFrame(animate);
-}
-animate();
-window.addEventListener('resize',()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-
-// ---------- 標題動畫 ----------
-const title = document.getElementById("mainTitle");
-setTimeout(()=>{
-  title.style.transition = "all 1s ease-out";
-  title.style.opacity = 1;
-  title.style.transform = "scale(1)";
-},500);
-
-// ---------- Slogan 打字動畫 ----------
-const text = "歡迎來到內湖高中軍武社！";
-let i = 0;
-function typeWriter(){
-  if(i<text.length){
-    document.getElementById("slogan").innerHTML += text.charAt(i);
-    i++;
-    setTimeout(typeWriter,100);
-  }
-}
-typeWriter();
-</script>
 
 </body>
 </html>
