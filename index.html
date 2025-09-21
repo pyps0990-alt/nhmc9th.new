@@ -1,192 +1,114 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>內湖高中軍武社</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+/* 背景畫布全屏 */
+#bgCanvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-10; }
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDGhHrcV5F93chxTeFXI0KkwgHeb0m_31g",
-    authDomain: "nhmc9th.firebaseapp.com",
-    projectId: "nhmc9th",
-    storageBucket: "nhmc9th.firebasestorage.app",
-    messagingSenderId: "95509517890",
-    appId: "1:95509517890:web:d8627e54521db752c53fdb",
-    measurementId: "G-FKQL729HWM"
-  };
+/* 標題初始樣式 */
+#mainTitle { opacity:0; transform: scale(0.5); }
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+/* 按鈕 hover 動畫 */
+.btn { transition: all 0.3s ease; }
+.btn:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+/* 導覽列 */
+nav a { transition: all 0.3s ease; }
+nav a:hover { color: #FACC15; }
+</style>
+</head>
+<body class="bg-gray-900 text-white overflow-x-hidden">
+
+<!-- 背景粒子 -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- 導覽列 -->
+<header class="bg-green-900 p-4 flex justify-between items-center fixed top-0 w-full z-20">
+  <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+  <nav class="space-x-4">
+    <a href="index.html" class="text-yellow-300 font-bold">首頁</a>
+    <a href="attendance.html">出缺勤</a>
+    <a href="schedule.html">活動排程</a>
+    <a href="finance.html">財務紀錄</a>
+    <a href="knowledge.html">知識分享</a>
+    <a href="about.html">關於我們</a>
+  </nav>
+</header>
+
+<!-- 主內容 -->
+<div class="flex flex-col items-center justify-center min-h-screen text-center px-4 pt-32">
+  <h1 id="mainTitle" class="text-5xl font-bold text-yellow-400 mb-6">內湖高中軍武社</h1>
+  <p id="slogan" class="text-xl text-yellow-300 mb-10"></p>
+  <div class="space-x-4">
+    <a href="attendance.html" class="btn bg-green-700 px-6 py-3 rounded text-white font-bold hover:bg-green-600">出缺勤系統</a>
+    <a href="schedule.html" class="btn bg-blue-700 px-6 py-3 rounded text-white font-bold hover:bg-blue-600">活動排程</a>
+    <a href="finance.html" class="btn bg-red-700 px-6 py-3 rounded text-white font-bold hover:bg-red-600">財務紀錄</a>
+  </div>
+</div>
+
+<!-- 頁尾 -->
+<footer class="bg-gray-800 text-center p-4 text-sm text-gray-400 mt-10">
+  &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+</footer>
+
+<script>
+// ---------- 背景粒子 ----------
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = [];
+for(let i=0;i<120;i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*2+1,
+    dx: (Math.random()-0.5)*0.5,
+    dy: (Math.random()-0.5)*0.5
+  });
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x += p.dx; p.y += p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.6)";
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+window.addEventListener('resize',()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+// ---------- 標題動畫 ----------
+const title = document.getElementById("mainTitle");
+setTimeout(()=>{
+  title.style.transition = "all 1s ease-out";
+  title.style.opacity = 1;
+  title.style.transform = "scale(1)";
+},500);
+
+// ---------- Slogan 打字動畫 ----------
+const text = "歡迎來到內湖高中軍武社！";
+let i = 0;
+function typeWriter(){
+  if(i<text.length){
+    document.getElementById("slogan").innerHTML += text.charAt(i);
+    i++;
+    setTimeout(typeWriter,100);
+  }
+}
+typeWriter();
 </script>
 
-  <!-- AOS 動畫套件 -->
-<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-
-
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js">
-    let chartInstance = null;
-
-    function updateChart() {
-      const presentCount = members.filter(m => m.present).length;
-      const absentCount = members.length - presentCount;
-
-      const ctx = document.getElementById("attendanceChart").getContext("2d");
-
-      if (chartInstance) chartInstance.destroy(); // 清除舊圖表
-
-      chartInstance = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["出席", "缺席"],
-          datasets: [{
-            data: [presentCount, absentCount],
-            backgroundColor: ["#C0A96A", "#FF4C4C"],
-            borderColor: "#1C1C1C",
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              labels: { color: "#000" }
-            }
-          }
-        }
-      });
-    }
-  </script>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>內湖高中軍武社</title>
-
-  <!-- Tailwind CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-  <!-- 字體設定（Oswald + Roboto） -->
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-    }
-    h1, h2, h3 {
-      font-family: 'Oswald', sans-serif;
-    }
-  </style>
-</head>
-<body class="bg-gray-900 text-white">
-
-  <!-- 🔰 導覽列 -->
-  <header class="bg-green-900 p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
-    <nav class="space-x-4">
-      <a href="index.html" class="hover:text-yellow-300">首頁</a>
-      <a href="pages/schedule.html" class="hover:text-yellow-300">活動排程</a>
-      <a href="pages/attendance.html" class="hover:text-yellow-300">出缺勤</a>
-      <a href="pages/finance.html" class="hover:text-yellow-300">財務紀錄</a>
-      <a href="pages/knowledge.html" class="hover:text-yellow-300">知識分享</a>
-      <a href="pages/about.html" class="hover:text-yellow-300">關於我們</a>
-    </nav>
-  </header>
-
-<body>
-  <!-- 🖼️ 主視覺區 -->
-  <section class="relative bg-black text-white py-20 px-8 text-center overflow-hidden" data-aos="fade-up">
-  
-    <!-- 背景圖層 -->
-  <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image: url('assets/images/IMG_1645.jpg');"></div>
-
-  <!-- 文字內容層 -->
-  <div class="relative z-10">
-    <h1 class="text-4xl md:text-5xl font-bold text-yellow-300 mb-4 tracking-wide">
-      紀律・榮譽・責任
-    </h1>
-    <p class="text-lg md:text-xl text-gray-200 mb-6">
-      打造最專業的高中軍武社網站
-    </p>
-    <a href="pages/about.html" class="inline-block bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-300 transition transform hover:scale-105">
-      認識我們 →
-    </a>
-  </div>
-</section>
-
-<!-- 📢 最新公告 -->
-<section class="bg-green-950 text-white py-10 px-8" data-aos="fade-right">
-  <h2 class="text-2xl font-bold text-yellow-300 mb-4">📣 最新公告</h2>
-  <ul class="list-disc list-inside text-gray-200 space-y-2">
-    <li>2025/09/28（六）戰術講解活動，請幹部提前 15 分鐘集合</li>
-    <li>2025/10/02 幹部會議將討論社費預算與新裝備採購</li>
-    <li>網站已全面升級，請幹部登入後使用後台功能</li>
-  </ul>
-</section>
-
-<!-- 🎥 活動精華影片 -->
-<section class="bg-gray-900 text-white py-10 px-8 text-center" data-aos="zoom-in">
-  <h2 class="text-2xl font-bold text-yellow-300 mb-4">🎥 活動精華影片</h2>
-  <div class="aspect-w-16 aspect-h-9 max-w-3xl mx-auto rounded overflow-hidden shadow-lg">
-    <iframe src="https://www.youtube.com/embed/你的影片ID" frameborder="0" allowfullscreen class="w-full h-full"></iframe>
-  </div>
-  <p class="text-gray-400 mt-4">影片由幹部剪輯，完整記錄軍武社的榮耀時刻</p>
-</section>
-
-<!-- 📦 模組入口區 -->
-<main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
-  <a href="pages/schedule.html"
-   class="group block bg-gradient-to-br from-green-800 to-gray-900 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition cursor-pointer"
-   data-aos="fade-up" data-aos-delay="100">
-      <span class="text-3xl">📅</span>
-      <h3 class="text-xl font-bold text-yellow-300 group-hover:underline">活動排程</h3>
-    </div>
-    <p class="text-gray-200 mt-2">查看近期活動與報名資訊</p>
-  </a>
-
-  <a href="pages/attendance.html"
-   class="group block bg-gradient-to-br from-green-800 to-gray-900 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition cursor-pointer"
-   data-aos="fade-up" data-aos-delay="200">
-    <div class="flex items-center space-x-3">
-      <span class="text-3xl">✅</span>
-      <h3 class="text-xl font-bold text-yellow-300 group-hover:underline">出缺勤點名</h3>
-    </div>
-    <p class="text-gray-200 mt-2">幹部快速勾選出席，統計出勤</p>
-  </a>
-
-  <a href="pages/finance.html"
-   class="group block bg-gradient-to-br from-green-800 to-gray-900 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition cursor-pointer"
-   data-aos="fade-up" data-aos-delay="300">
-    <div class="flex items-center space-x-3">
-      <span class="text-3xl">💰</span>
-      <h3 class="text-xl font-bold text-yellow-300 group-hover:underline">財務紀錄</h3>
-    </div>
-    <p class="text-gray-200 mt-2">社費收支透明化，圖表分析</p>
-  </a>
-
-  <a href="pages/knowledge.html"
-   class="group block bg-gradient-to-br from-green-800 to-gray-900 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition cursor-pointer"
-   data-aos="fade-up" data-aos-delay="400">
-    <div class="flex items-center space-x-3">
-      <span class="text-3xl">📚</span>
-      <h3 class="text-xl font-bold text-yellow-300 group-hover:underline">知識分享</h3>
-    </div>
-    <p class="text-gray-200 mt-2">上傳文章、分類瀏覽、標籤系統</p>
-  </a>
-</main>
-
-  <!-- 🧾 頁尾 -->
-  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400">
-    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
-  </footer>
-  <script>
-    AOS.init();
-  </script>
 </body>
 </html>
-
