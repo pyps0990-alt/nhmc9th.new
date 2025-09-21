@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+  <header class="bg-green-900 p-4 flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+  <nav class="space-x-4 text-white">
+    <a href="../index.html" class="hover:text-yellow-300">首頁</a>
+    <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
+    <a href="attendance.html" class="text-yellow-300 font-bold underline">出缺勤</a>
+    <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
+    <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
+    <a href="about.html" class="hover:text-yellow-300">關於我們</a>
+  </nav>
+</header>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>軍武社簽到系統</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
+<body class="bg-gray-900 text-white p-6">
 
-<body class="bg-gray-900 text-white">
- <!-- 導覽列 -->
-  <header class="bg-green-900 p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
-    <nav class="space-x-4">
-      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
-      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
-      <a href="attendance.html" class="text-yellow-300 font-bold">出缺勤</a>
-      <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
-      <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
-      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
-    </nav>
-  </header>
-  <h1 class="text-3xl font-bold text-yellow-300 mb-4">✅ 軍武社出缺勤簽到系統</h1>
+  <h1 class="text-3xl font-bold text-yellow-300 mb-6">✅ 軍武社出缺勤簽到系統</h1>
+
   <div class="mb-4">
     <label for="date-picker" class="mr-2">選擇日期：</label>
     <input type="date" id="date-picker" class="text-black px-2 py-1 rounded" />
   </div>
+
   <div class="mb-4 space-x-2">
     <button id="add-class" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500">➕ 新增堂數</button>
     <button id="save-attendance" class="bg-green-600 px-4 py-2 rounded hover:bg-green-500">💾 儲存簽到</button>
@@ -36,7 +37,7 @@
   <div id="content-container"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxApn48yndQ4MCQ8Z8pUuPgOekEid2QUtRelIxN6zGWrd3H9Dszrm0HicyknfhrDLUo/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxBQiShwk_6RrrbxlZzpx6kvbPr7evBmaEEO1kTeRB15R5M2kObrtVD-O3IzILG2Wq_/exec";
     const datePicker = document.getElementById("date-picker");
     const tabContainer = document.getElementById("tab-container");
     const contentContainer = document.getElementById("content-container");
@@ -118,11 +119,11 @@
             date: datePicker.value,
             class: c,
             name: cb.dataset.name,
-            attendance: cb.checked ? 1 : 0,
-            token: "junwu2025"
+            attendance: cb.checked ? 1 : 0
           });
         });
       }
+
       fetch(API_URL,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -150,3 +151,4 @@
   </script>
 </body>
 </html>
+
