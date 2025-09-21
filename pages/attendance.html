@@ -27,9 +27,7 @@
   </div>
 
   <!-- Tabs -->
-  <div id="tab-container" class="flex space-x-4 mb-6">
-    <button class="tab-btn bg-green-700 px-4 py-2 rounded" data-tab="class1">第1堂課</button>
-  </div>
+  <div id="tab-container" class="flex space-x-4 mb-6"></div>
 
   <!-- 控制按鈕 -->
   <div class="mb-6 space-x-2">
@@ -70,6 +68,7 @@ const members = [
 // 🔹 建立單堂課表格
 function createClass(num){
   const tabId = "class"+num;
+  if(document.getElementById(tabId)) return; // ✅ 避免重複創建
 
   // Tab
   const newTab = document.createElement("button");
@@ -105,7 +104,7 @@ function createClass(num){
   contentContainer.appendChild(newContent);
   setupAttendance(`attendance-${num}`, `count-${num}`, num);
 
-  // 🔹 初始化第一堂課 tab 為 active
+  // 🔹 第一堂課自動切換 active
   if(num === 1) switchTab(tabId, newTab);
 }
 
