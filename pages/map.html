@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>教室地圖｜內湖高中軍武社</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- AOS 動畫 -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+    }
+    body.loaded {
+      opacity: 1;
+    }
+    h1, h2, h3 {
+      font-family: 'Oswald', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white" onload="document.body.classList.add('loaded')">
+
+  <!-- 🔰 導覽列 -->
+  <header class="bg-green-900 p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+    <nav class="space-x-4">
+      <a href="../index.html" class="hover:text-yellow-300">首頁</a>
+      <a href="schedule.html" class="hover:text-yellow-300">活動排程</a>
+      <a href="finance.html" class="hover:text-yellow-300">財務紀錄</a>
+      <a href="knowledge.html" class="hover:text-yellow-300">知識分享</a>
+      <a href="map.html" class="text-yellow-300 font-bold underline">教室地圖</a>
+      <a href="about.html" class="hover:text-yellow-300">關於我們</a>
+    </nav>
+  </header>
+
+  <!-- 🗺️ 教室地圖主區塊 -->
+  <section class="py-16 px-8 text-center" data-aos="fade-up">
+    <h2 class="text-3xl font-bold text-yellow-300 mb-6">🗺️ 教室地圖導覽</h2>
+    <p class="text-gray-300 mb-8">快速查看社團教室位置、樓層分布與集合地點</p>
+
+    <!-- 地圖圖片 -->
+    <div class="max-w-4xl mx-auto rounded overflow-hidden shadow-lg mb-6" data-aos="zoom-in">
+      <img src="../assets/images/classroom-map.jpg" alt="教室地圖" class="w-full h-auto rounded">
+    </div>
+
+    <!-- 樓層說明 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+      <div class="bg-green-800 p-6 rounded shadow">
+        <h3 class="text-xl font-bold text-yellow-300 mb-2">📍 3F 教室</h3>
+        <p class="text-gray-200">軍武社主要活動教室位於 3 樓 305 教室，靠近樓梯口，方便集合與器材搬運。</p>
+      </div>
+      <div class="bg-green-800 p-6 rounded shadow">
+        <h3 class="text-xl font-bold text-yellow-300 mb-2">🧰 B1 器材室</h3>
+        <p class="text-gray-200">器材室位於地下室 B1，需由中庭樓梯下去，請幹部注意安全與器材管理。</p>
+      </div>
+    </div>
+
+    <!-- Google 地圖嵌入（可選） -->
+    <div class="mt-12" data-aos="fade-up" data-aos-delay="200">
+      <h3 class="text-xl font-bold text-yellow-300 mb-4">🏫 校園位置</h3>
+      <div class="aspect-w-16 aspect-h-9 max-w-3xl mx-auto rounded overflow-hidden shadow-lg">
+        <iframe src="https://www.google.com/maps/embed?pb=你的地圖嵌入碼" frameborder="0" allowfullscreen class="w-full h-full"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🧾 頁尾 -->
+  <footer class="bg-gray-800 text-center p-4 text-sm text-gray-400 mt-12">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
+
+  <script>
+    AOS.init();
+  </script>
+</body>
+</html>
