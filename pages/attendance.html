@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>出缺勤點名 | 內湖高中軍武社</title>
-
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
     .tab-content { display: none; }
@@ -41,7 +40,7 @@
 </main>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyHoY-o3tJ8mGBrV866WYm5UxSpvxSzhVGK_Rvp3Nfi5xXgO7fDsapLpCh-hYlCTVFa/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyFIwB-LQwB234sdj66FmfYTsXJABsyZJSh2eAwRd8O0qMyzc0gLKe8dP4Ppe_ABZXF/exec"; // 替換成你的 Apps Script URL
 
 const datePicker = document.getElementById("date-picker");
 const tabContainer = document.getElementById("tab-container");
@@ -54,7 +53,7 @@ let currentDate = new Date().toISOString().split("T")[0];
 datePicker.value = currentDate;
 let classCount = 1;
 
-// 🔹 社員名單
+// 社員名單
 const members = [
   "10112 許紘瑞","10410 黃浩恩","10421 白雨晨","10512 陳冠廷","10527 梁瑞紗",
   "10803 陳韋曄","10901 王翊宸","10909 張智翔","10916 劉添淳","11017 謝雨泓",
@@ -65,28 +64,30 @@ const members = [
   "21605 李緒恆","21606 洪子皓","21629 游閔喬","21703 何家濬"
 ];
 
-// 🔹 建立單堂課表格
-function createClass(num){
-  const tabId = "class"+num;
-  if(document.getElementById(tabId)) return; // ✅ 避免重複創建
+// 建立單堂課表格
+function createClass(num) {
+  const tabId = "class" + num;
 
-  // Tab
+  // Tab 按鈕
   const newTab = document.createElement("button");
   newTab.className = "tab-btn bg-green-700 px-4 py-2 rounded";
   newTab.dataset.tab = tabId;
   newTab.textContent = `第${num}堂課`;
   tabContainer.appendChild(newTab);
 
-  // Content
+  // Tab 內容
   const newContent = document.createElement("div");
   newContent.id = tabId;
   newContent.className = "tab-content";
 
-  let tbodyHTML = members.map(name=>
+  let tbodyHTML = members.map(name => 
     `<tr>
       <td class="p-2">${name}</td>
-      <td class="p-2 text-center"><input type="checkbox" class="attendance-${num}" data-name="${name}"></td>
-    </tr>`).join("");
+      <td class="p-2 text-center">
+        <input type="checkbox" class="attendance-${num}" data-name="${name}">
+      </td>
+    </tr>`
+  ).join("");
 
   newContent.innerHTML = `
     <table class="w-full bg-green-800 text-white rounded shadow mb-2">
@@ -99,83 +100,95 @@ function createClass(num){
       <tbody>${tbodyHTML}</tbody>
     </table>
     出席人數：<span id="count-${num}" class="text-yellow-300 font-bold">0</span> 人
+    <span id="status-${num}" class="ml-4 text-sm"></span>
   `;
 
   contentContainer.appendChild(newContent);
-  setupAttendance(`attendance-${num}`, `count-${num}`, num);
-
-  // 🔹 第一堂課自動切換 active
-  if(num === 1) switchTab(tabId, newTab);
+  setupAttendance(`attendance-${num}`, `count-${num}`, num, `status-${num}`);
 }
 
-// 🔹 Tab 切換
-function switchTab(tabId, tabBtn){
-  document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(t=>t.classList.remove("bg-yellow-500"));
+// Tab 切換
+function switchTab(tabId, tabBtn) {
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("bg-yellow-500"));
   document.getElementById(tabId).classList.add("active");
   tabBtn.classList.add("bg-yellow-500");
 }
 
-tabContainer.addEventListener("click", e=>{
-  if(e.target.classList.contains("tab-btn")){
+tabContainer.addEventListener("click", e => {
+  if (e.target.classList.contains("tab-btn")) {
     switchTab(e.target.dataset.tab, e.target);
   }
 });
 
-// 🔹 出勤計算 & 同步 Google Sheet
-function setupAttendance(className, counterId, classNum){
-  const checkboxes = document.querySelectorAll("."+className);
+// 出勤計算 & 同步 Google Sheet
+function setupAttendance(className, counterId, classNum, statusId) {
+  const checkboxes = document.querySelectorAll("." + className);
   const countDisplay = document.getElementById(counterId);
+  const statusDisplay = document.getElementById(statusId);
 
-  async function updateCount(cb){
-    const count = Array.from(checkboxes).filter(c=>c.checked).length;
+  async function updateCount(cb) {
+    const count = Array.from(checkboxes).filter(c => c.checked).length;
     countDisplay.textContent = count;
 
     const name = cb.dataset.name;
     const attendance = cb.checked ? 1 : 0;
-    await fetch(API_URL,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date:currentDate,class:classNum,name,attendance})
-    });
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: currentDate, class: classNum, name, attendance })
+      });
+      if (!res.ok) throw new Error(res.status);
+      statusDisplay.textContent = "同步成功";
+      statusDisplay.className = "ml-4 text-sm text-green-400";
+    } catch (e) {
+      console.error("同步失敗:", e);
+      statusDisplay.textContent = "同步失敗";
+      statusDisplay.className = "ml-4 text-sm text-red-400";
+    }
   }
 
-  checkboxes.forEach(cb=>cb.addEventListener("change", ()=>updateCount(cb)));
-  loadAttendance(classNum);
+  checkboxes.forEach(cb => cb.addEventListener("change", () => updateCount(cb)));
+  loadAttendance(classNum, checkboxes, countDisplay);
 }
 
-// 🔹 讀取 Google Sheet 資料
-async function loadAttendance(classNum){
-  const res = await fetch(`${API_URL}?date=${currentDate}`);
-  const data = await res.json();
-  const checkboxes = document.querySelectorAll(`.attendance-${classNum}`);
-  checkboxes.forEach(cb=>{
-    const record = data.find(r=>Number(r.class)===classNum && r.name===cb.dataset.name);
-    if(record) cb.checked = record.attendance==1;
-  });
-  const count = Array.from(checkboxes).filter(c=>c.checked).length;
-  document.getElementById(`count-${classNum}`).textContent = count;
+// 讀取 Google Sheet 資料
+async function loadAttendance(classNum, checkboxes, countDisplay) {
+  try {
+    const res = await fetch(`${API_URL}?date=${currentDate}`);
+    const data = await res.json();
+    checkboxes.forEach(cb => {
+      const record = data.find(r => r.class == classNum && r.name == cb.dataset.name);
+      if (record) cb.checked = record.attendance == 1;
+    });
+    const count = Array.from(checkboxes).filter(c => c.checked).length;
+    countDisplay.textContent = count;
+  } catch (e) {
+    console.error("讀取失敗:", e);
+  }
 }
 
-// 🔹 新增堂數
-addClassBtn.addEventListener("click", ()=>{
+// 新增堂數
+addClassBtn.addEventListener("click", () => {
   classCount++;
   createClass(classCount);
 });
 
-// 🔹 清除紀錄
-clearBtn.addEventListener("click", ()=>{
-  if(confirm("確定清除這個日期的出缺勤紀錄嗎？")){
-    fetch(API_URL,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date:currentDate,class:-1,name:"clear",attendance:0})
-    }).then(()=>location.reload());
+// 清除紀錄
+clearBtn.addEventListener("click", () => {
+  if (confirm("確定清除這個日期的出缺勤紀錄嗎？")) {
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: currentDate, class: -1, name: "clear", attendance: 0 })
+    }).then(() => location.reload());
   }
 });
 
-// 🔹 日期切換
-datePicker.addEventListener("change", ()=>{
+// 日期切換
+datePicker.addEventListener("change", () => {
   currentDate = datePicker.value;
   contentContainer.innerHTML = "";
   tabContainer.innerHTML = "";
@@ -183,25 +196,14 @@ datePicker.addEventListener("change", ()=>{
   createClass(1);
 });
 
-// 🔹 匯出 CSV
-exportBtn.addEventListener("click", ()=>{
+// 匯出 CSV
+exportBtn.addEventListener("click", () => {
   let csv = "堂數,姓名,出席\n";
-  for(let c=1;c<=classCount;c++){
+  for (let c = 1; c <= classCount; c++) {
     const checkboxes = document.querySelectorAll(`.attendance-${c}`);
-    checkboxes.forEach(cb=>{
-      csv += `${c},${cb.dataset.name},${cb.checked?1:0}\n`;
+    checkboxes.forEach(cb => {
+      csv += `${c},${cb.dataset.name},${cb.checked ? 1 : 0}\n`;
     });
   }
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${currentDate}_attendance.csv`;
-  a.click();
-});
-
-// 🔹 初始化第一堂課
-createClass(1);
-</script>
-</body>
-</html>
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL
