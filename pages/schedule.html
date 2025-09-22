@@ -163,6 +163,9 @@
     const dateEl = document.getElementById('eventDate');
     const descEl = document.getElementById('eventDesc');
 
+    const db = firebase.database();
+    const eventsRef = db.ref("events");
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       locale: 'zh-tw',
@@ -172,7 +175,7 @@
         right: 'dayGridMonth,timeGridWeek'
       },
       events: function(fetchInfo, successCallback, failureCallback) {
-        eventsRef.on("value", snapshot => {
+        eventsRef.once("value").then(snapshot => {
           const data = snapshot.val() || {};
           const events = Object.values(data).map(event => ({
             title: event.title,
@@ -180,9 +183,8 @@
             description: event.description || '',
             color: '#2563eb'
           }));
-          calendar.removeAllEvents();
-          calendar.addEventSource(events);
-        });
+          successCallback(events);
+        }).catch(failureCallback);
       },
       eventClick: function(info) {
         info.jsEvent.preventDefault();
@@ -198,3 +200,4 @@
 </script>
 </body>
 </html>
+
