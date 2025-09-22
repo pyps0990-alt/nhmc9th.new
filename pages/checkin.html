@@ -200,6 +200,20 @@
       unsignedBody.appendChild(row);
     });
   });
+//選單
+  const menuBtn = document.getElementById("menuBtn");
+  const menuList = document.getElementById("menuList");
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuList.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+      menuList.classList.add("hidden");
+    }
+  });
 </script>
 
 
