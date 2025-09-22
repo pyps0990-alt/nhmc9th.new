@@ -56,6 +56,7 @@
       <form id="eventForm" class="space-y-4 mb-6">
         <input type="text" id="eventTitle" placeholder="活動標題" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
         <input type="date" id="eventDate" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+        <textarea id="eventDesc" rows="3" placeholder="活動說明（選填）" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
         <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">➕ 新增活動</button>
       </form>
       <ul id="eventList" class="space-y-2 text-sm text-white"></ul>
@@ -116,8 +117,9 @@
     e.preventDefault();
     const title = document.getElementById("eventTitle").value.trim();
     const date = document.getElementById("eventDate").value;
+    const description = document.getElementById("eventDesc").value.trim();
     if (title && date) {
-      eventsRef.push({ title, date });
+      eventsRef.push({ title, date, description });
       eventForm.reset();
     }
   });
