@@ -29,6 +29,10 @@
     }
   </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
 <body class="bg-gray-900 text-white">
 <header class="bg-green-900 p-4 flex justify-between items-center">
   <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
@@ -44,9 +48,24 @@
       <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
       <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
       <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
+      <!-- 幹部後台選單項目（預設隱藏） -->
+      <a href="pages/admin.html" id="adminLink" class="block px-4 py-2 text-white hover:bg-green-700 text-sm hidden">🛡️ 幹部後台</a>
+      <!-- 登出按鈕（預設隱藏） -->
+      <button id="logoutBtn" class="block w-full text-left px-4 py-2 text-white hover:bg-red-700 text-sm hidden">🚪 登出</button>
+
     </div>
   </div>
 </header>
+<!-- 幹部登入區塊 -->
+<div id="loginPanel" class="bg-gray-800 p-4 text-sm md:text-base text-white flex justify-between items-center">
+  <div id="adminStatus">🔒 幹部尚未登入</div>
+  <div class="space-x-2">
+    <input type="email" id="adminEmail" placeholder="幹部 Email" class="px-2 py-1 rounded bg-gray-700 text-white border border-gray-500">
+    <input type="password" id="adminPassword" placeholder="密碼" class="px-2 py-1 rounded bg-gray-700 text-white border border-gray-500">
+    <button id="loginBtn" class="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-300">登入</button>
+    <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hidden">登出</button>
+  </div>
+</div>
 
 <!-- 主視覺區 -->
 <section class="relative bg-black text-white py-20 px-4 text-center overflow-hidden" data-aos="fade-up">
@@ -101,21 +120,59 @@
 
 <!-- JavaScript 修正選單與轉場 -->
 <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+    authDomain: "nhmc9th-672f6.firebaseapp.com",
+    projectId: "nhmc9th-672f6",
+    appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const adminStatus = document.getElementById("adminStatus");
+  const loginPanel = document.getElementById("loginPanel");
+  const adminLink = document.getElementById("adminLink");
+
+loginBtn.addEventListener("click", () => {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      adminStatus.textContent = "✅ 幹部已登入";
+      loginPanel.classList.add("hidden");
+      adminLink.classList.remove("hidden");
+      logoutBtn.classList.remove("hidden");
+    })
+    .catch(err => {
+      alert("登入失敗：" + err.message);
+    });
+});
+
+logoutBtn.addEventListener("click", () => {
+  auth.signOut().then(() => {
+    adminStatus.textContent = "🔒 幹部尚未登入";
+    loginPanel.classList.remove("hidden");
+    adminLink.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+  });
+});
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    adminStatus.textContent = "✅ 幹部已登入";
+    loginPanel.classList.add("hidden");
+    adminLink.classList.remove("hidden");
+    logoutBtn.classList.remove("hidden");
+  } else {
+    adminStatus.textContent = "🔒 幹部尚未登入";
+    loginPanel.classList.remove("hidden");
+    adminLink.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+  }
+});
+
   AOS.init();
-
-  const menuBtn = document.getElementById("menuBtn");
-  const menuList = document.getElementById("menuList");
-
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    menuList.classList.toggle("hidden");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
-      menuList.classList.add("hidden");
-    }
-  });
 
   document.querySelectorAll("a[href]").forEach(link => {
     link.addEventListener("click", function(e) {
@@ -135,6 +192,22 @@
 </script>
 
 <!-- 頁尾 -->
+<script>
+  const menuBtn = document.getElementById("menuBtn");
+  const menuList = document.getElementById("menuList");
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuList.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+      menuList.classList.add("hidden");
+    }
+  });
+</script>
+
 <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
   &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
 </footer>
