@@ -48,6 +48,9 @@
       </div>
       <button type="submit" class="bg-yellow-400 text-black font-semibold px-6 py-2 rounded hover:bg-yellow-300 transition transform hover:scale-105 text-sm md:text-base">✅ 簽到</button>
     </form>
+      <button id="clearCheckinBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-4 text-sm">
+      🗑️ 清除所有簽到紀錄
+      </button>
   </section>
 
   <!-- 🧾 已出席名單 -->
@@ -189,7 +192,17 @@
     listRef.push({ name, id, note, timestamp: Date.now() });
     form.reset();
   });
+  //清除簽到
+    const signedListRef = db.ref("signedList");
+    const clearBtn = document.getElementById("clearCheckinBtn");
 
+    clearBtn.addEventListener("click", () => {
+      if (confirm("確定要清除所有簽到紀錄嗎？此操作無法復原！")) {
+        signedListRef.remove()
+          .then(() => alert("✅ 已成功清除所有簽到紀錄"))
+          .catch(err => alert("❌ 清除失敗：" + err.message));
+      }
+    });
   // 即時更新畫面
   listRef.on("value", snapshot => {
     const data = snapshot.val() || {};
