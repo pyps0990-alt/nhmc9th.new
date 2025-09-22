@@ -48,7 +48,7 @@
       </div>
       <button type="submit" class="bg-yellow-400 text-black font-semibold px-6 py-2 rounded hover:bg-yellow-300 transition transform hover:scale-105 text-sm md:text-base">✅ 簽到</button>
     </form>
-      <button id="clearCheckinBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-4 text-sm">
+      <button id="clearCheckinBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-4 text-sm hidden">
       🗑️ 清除所有簽到紀錄
       </button>
   </section>
@@ -192,17 +192,34 @@
     listRef.push({ name, id, note, timestamp: Date.now() });
     form.reset();
   });
-  //清除簽到
-    const signedListRef = db.ref("signedList");
-    const clearBtn = document.getElementById("clearCheckinBtn");
 
-    clearBtn.addEventListener("click", () => {
-      if (confirm("確定要清除所有簽到紀錄嗎？此操作無法復原！")) {
-        signedListRef.remove()
-          .then(() => alert("✅ 已成功清除所有簽到紀錄"))
-          .catch(err => alert("❌ 清除失敗：" + err.message));
-      }
-    });
+const auth = firebase.auth();
+const clearBtn = document.getElementById("clearCheckinBtn");
+const signedListRef = firebase.database().ref("signedList");
+
+// 登入狀態監聽
+auth.onAuthStateChanged(user => {
+  if (user) {
+    // 幹部登入後顯示清除按鈕
+    clearBtn.classList.remove("hidden");
+  } else {
+    // 未登入則隱藏
+    clearBtn.classList.add("hidden");
+  }
+});
+
+// 清除簽到紀錄
+clearBtn.addEventListener("click", () => {
+  if (confirm("確定要清除所有簽到紀錄嗎？此操作無法復原！")) {
+    signedListRef.remove()
+      .then(() => alert("✅ 已成功清除所有簽到紀錄"))
+      .catch(err => alert("❌ 清除失敗：" + err.message));
+  }
+});
+
+  //清除簽到
+  // (已在前方宣告 signedListRef 和 clearBtn，這裡不需重複宣告)
+  // 清除簽到的事件監聽已在前方設定，這裡可移除重複程式碼。
   // 即時更新畫面
   listRef.on("value", snapshot => {
     const data = snapshot.val() || {};
