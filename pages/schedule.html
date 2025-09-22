@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>活動排程 | 內湖高中軍武社</title>
@@ -47,33 +51,15 @@
     </button>
     <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg hidden z-50">
       <a href="../index.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🏠 首頁</a>
-      <a href="map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
-      <a href="schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
-      <a href="checkin.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📝 社課簽到</a>
-      <a href="finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
-      <a href="knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
-      <a href="about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/checkin.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📝 社課簽到</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
     </div>
   </div>
 </header>
-  
-  <!-- 活動調查表單 -->
-  <section class="py-10 px-4 md:px-8 text-center">
-    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">📋 活動調查表單</h2>
-    <div class="max-w-4xl mx-auto">
-      <iframe src="https://forms.gle/tRXqttBhpaNNvqSH9" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
-    </div>
-  </section>
-  
-<!-- 地社表單 -->
-  <section class="py-10 px-4 md:px-8 text-center">
-    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">📋 地社人員表單</h2>
-    <div class="max-w-4xl mx-auto">
-      <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScxOVpt96iVnZCPQjl4apjMYGvGOXAU02U5I_W9I0AD7yS6hA/viewform" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
-    </div>
-  </section>
-
-
   <!-- 活動日曆 -->
   <section class="py-10 px-4 md:px-8 text-center">
     <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">🗓️ 活動日曆</h2>
@@ -87,25 +73,90 @@
       <p id="eventDesc" class="mb-1 text-sm md:text-base"><strong>說明：</strong></p>
     </div>
   </section>
-<script>
-    const menuBtn = document.getElementById("menuBtn");
-    const menuList = document.getElementById("menuList");
+  <!-- 活動調查表單 -->
+  <section class="py-10 px-4 md:px-8 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">📋 活動調查表單</h2>
+    <div class="max-w-4xl mx-auto">
+      <iframe src="https://forms.gle/tRXqttBhpaNNvqSH9" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
+    </div>
+  </section>
 
-    menuBtn.addEventListener("click", () => {
-      menuList.classList.toggle("hidden");
-    });
+  <!-- 地社表單 -->
+  <section class="py-10 px-4 md:px-8 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">📋 地社人員表單</h2>
+    <div class="max-w-4xl mx-auto">
+      <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScxOVpt96iVnZCPQjl4apjMYGvGOXAU02U5I_W9I0AD7yS6hA/viewform" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">載入中…</iframe>
+    </div>
+  </section>
 
-    document.addEventListener("click", (e) => {
-      if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
-        menuList.classList.add("hidden");
-      }
-    });
-  </script>
   <!-- 頁尾 -->
   <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
     &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
   </footer>
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+    authDomain: "nhmc9th-672f6.firebaseapp.com",
+    databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
+    projectId: "nhmc9th-672f6",
+    storageBucket: "nhmc9th-672f6.appspot.com",
+    messagingSenderId: "470057381540",
+    appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const eventsRef = db.ref("events");
+  const eventList = document.getElementById("eventList");
 
+  eventsRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    eventList.innerHTML = "";
+
+    Object.values(data).forEach(event => {
+      const li = document.createElement("li");
+      li.className = "bg-gray-800 p-4 rounded shadow";
+      li.innerHTML = `
+        <h3 class="text-yellow-300 font-bold text-lg mb-1">📅 ${event.date}</h3>
+        <p class="text-white font-semibold mb-1">${event.title}</p>
+        <p class="text-gray-400 text-sm">由幹部設定</p>
+      `;
+      eventList.appendChild(li);
+    });
+  });
+</script>
+<script>
+    AOS.init();
+
+  const menuBtn = document.getElementById("menuBtn");
+  const menuList = document.getElementById("menuList");
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuList.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+      menuList.classList.add("hidden");
+    }
+  });
+    
+  document.querySelectorAll("a[href]").forEach(link => {
+    link.addEventListener("click", function(e) {
+      const href = this.getAttribute("href");
+      const isInternal = href && !href.startsWith("http") && !href.startsWith("#") && !href.endsWith(".jpg");
+      const isMenuLink = this.closest("#menuList");
+
+      if (isInternal && !isMenuLink) {
+        e.preventDefault();
+        document.body.classList.add("fade-out");
+        setTimeout(() => {
+          window.location.href = href;
+        }, 400);
+      }
+    });
+  });
+</script>
   <!-- 初始化 FullCalendar -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -123,26 +174,19 @@
           center: 'title',
           right: 'dayGridMonth,timeGridWeek'
         },
-        events: [
-          {
-            title: '軍事演練',
-            start: '2025-09-25',
-            description: '模擬戰場環境，進行戰術演練',
-            color: '#f87171'
-          },
-          {
-            title: '社課：戰術講解',
-            start: '2025-09-28',
-            description: '由學長講解小隊戰術與通訊流程',
-            color: '#60a5fa'
-          },
-          {
-            title: '幹部會議',
-            start: '2025-10-02',
-            description: '討論下月活動規劃與人員分工',
-            color: '#34d399'
-          }
-        ],
+          events: function(fetchInfo, successCallback, failureCallback) {
+        eventsRef.once("value").then(snapshot => {
+    const data = snapshot.val() || {};
+    const events = Object.values(data).map(event => ({
+      title: event.title,
+      start: event.date,
+      description: event.description || '',
+      color: '#2563eb'
+    }));
+    successCallback(events);
+  }).catch(failureCallback);
+},
+
         eventClick: function(info) {
           info.jsEvent.preventDefault();
           titleEl.textContent = `活動：${info.event.title}`;
@@ -157,5 +201,3 @@
   </script>
 </body>
 </html>
-
-
