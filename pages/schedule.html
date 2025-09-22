@@ -172,7 +172,7 @@
         right: 'dayGridMonth,timeGridWeek'
       },
       events: function(fetchInfo, successCallback, failureCallback) {
-        eventsRef.once("value").then(snapshot => {
+        eventsRef.on("value", snapshot => {
           const data = snapshot.val() || {};
           const events = Object.values(data).map(event => ({
             title: event.title,
@@ -180,8 +180,9 @@
             description: event.description || '',
             color: '#2563eb'
           }));
-          successCallback(events);
-        }).catch(failureCallback);
+          calendar.removeAllEvents();
+          calendar.addEventSource(events);
+        });
       },
       eventClick: function(info) {
         info.jsEvent.preventDefault();
