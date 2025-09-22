@@ -65,10 +65,6 @@
         <tbody class="text-gray-200" id="signedListBody"></tbody>
       </table>
     </div>
-    <div class="text-right mt-4 flex justify-end gap-4">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">📤 匯出紀錄</button>
-      <button id="clearBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm md:text-base">🧹 清除簽到</button>
-    </div>
   </section>
 
   <!-- ❌ 未出席名單 -->
@@ -87,27 +83,11 @@
 
   <!-- 🧠 JavaScript -->
   <script>
-    const fullList = [
-    { id: "10112", name: "許紘瑞" }, { id: "10410", name: "黃浩恩" }, { id: "10421", name: "白雨晨" },
-    { id: "10512", name: "陳冠廷" }, { id: "10527", name: "梁瑞紗" }, { id: "10803", name: "江政儫" },
-    { id: "10901", name: "王翊宸" }, { id: "10909", name: "張智翔" }, { id: "10916", name: "劉添淳" },
-    { id: "11017", name: "謝宇泓" }, { id: "11105", name: "張博凱" }, { id: "11511", name: "郭兆威" },
-    { id: "11514", name: "黃家宏" }, { id: "11603", name: "李翊愷" }, { id: "11714", name: "戴旭君" },
-    { id: "20103", name: "周元凱" }, { id: "20113", name: "藍宇恩" }, { id: "20237", name: "鄧敏翎" },
-    { id: "20335", name: "蔡維妮" }, { id: "20508", name: "李文凱" }, { id: "20522", name: "楊恩愷" },
-    { id: "20618", name: "許德浩" }, { id: "20620", name: "陳奕嘉" }, { id: "20625", name: "劉宸廷" },
-    { id: "20702", name: "呂祁叡" }, { id: "20715", name: "陳俊睿" }, { id: "20907", name: "邱彥叡" },
-    { id: "20918", name: "黃友頡" }, { id: "20934", name: "韓怡萱" }, { id: "21016", name: "黃子宸" },
-    { id: "21315", name: "蕭川閔" }, { id: "21605", name: "李緒恆" }, { id: "21606", name: "洪子皓" },
-    { id: "21629", name: "游閔喬" }, { id: "21703", name: "何家濬" }
-    ];
+    // 已移除重複的 fullList 定義，請保留下方 Firebase 版本的 fullList。
 
     let signedList = [];
 
-    const signedBody = document.getElementById("signedListBody");
-    const unsignedBody = document.getElementById("unsignedListBody");
-    const form = document.getElementById("checkinForm");
-    const clearBtn = document.getElementById("clearBtn");
+    // 已在前方宣告 signedBody, unsignedBody, form, clearBtn，這裡不需重複宣告。
 
     function renderLists() {
       signedBody.innerHTML = "";
@@ -151,29 +131,119 @@
         alert("請填寫姓名與班級座號");
       }
     });
-
-    clearBtn.addEventListener("click", function () {
-      signedList = [];
-      renderLists();
-    });
-
     renderLists();
-  </script>
-  <script>
-    const menuBtn = document.getElementById("menuBtn");
-    const menuList = document.getElementById("menuList");
+    // End of first script block
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+    authDomain: "nhmc9th-672f6.firebaseapp.com",
+    databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
+    projectId: "nhmc9th-672f6",
+    storageBucket: "nhmc9th-672f6.appspot.com",
+    messagingSenderId: "470057381540",
+    appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const listRef = db.ref("signedList");
 
-    menuBtn.addEventListener("click", () => {
-      menuList.classList.toggle("hidden");
+  const fullList = [
+    { id: "10112", name: "許紘瑞" }, { id: "10410", name: "黃浩恩" }, { id: "10421", name: "白雨晨" },
+    { id: "10512", name: "陳冠廷" }, { id: "10527", name: "梁瑞紗" }, { id: "10803", name: "江政儫" },
+    { id: "10901", name: "王翊宸" }, { id: "10909", name: "張智翔" }, { id: "10916", name: "劉添淳" },
+    { id: "11017", name: "謝宇泓" }, { id: "11105", name: "張博凱" }, { id: "11511", name: "郭兆威" },
+    { id: "11514", name: "黃家宏" }, { id: "11603", name: "李翊愷" }, { id: "11714", name: "戴旭君" },
+    { id: "20103", name: "周元凱" }, { id: "20113", name: "藍宇恩" }, { id: "20237", name: "鄧敏翎" },
+    { id: "20335", name: "蔡維妮" }, { id: "20508", name: "李文凱" }, { id: "20522", name: "楊恩愷" },
+    { id: "20618", name: "許德浩" }, { id: "20620", name: "陳奕嘉" }, { id: "20625", name: "劉宸廷" },
+    { id: "20702", name: "呂祁叡" }, { id: "20715", name: "陳俊睿" }, { id: "20907", name: "邱彥叡" },
+    { id: "20918", name: "黃友頡" }, { id: "20934", name: "韓怡萱" }, { id: "21016", name: "黃子宸" },
+    { id: "21315", name: "蕭川閔" }, { id: "21605", name: "李緒恆" }, { id: "21606", name: "洪子皓" },
+    { id: "21629", name: "游閔喬" }, { id: "21703", name: "何家濬" }
+  ];
+  const signedBody = document.getElementById("signedListBody");
+  const unsignedBody = document.getElementById("unsignedListBody");
+  const form = document.getElementById("checkinForm");
+
+  // 提交簽到
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const id = document.getElementById("id").value.trim();
+    const note = document.getElementById("note").value.trim();
+
+    if (!name || !id) {
+      alert("請填寫姓名與班級座號");
+      return;
+    }
+
+    const snapshot = await listRef.orderByChild("id").equalTo(id).once("value");
+    if (snapshot.exists()) {
+      alert("此班級座號已簽到，請勿重複簽到！");
+      return;
+    }
+
+    listRef.push({ name, id, note, timestamp: Date.now() });
+    form.reset();
+  });
+
+  // 即時更新畫面
+  listRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    const signedList = Object.values(data);
+    signedBody.innerHTML = "";
+    unsignedBody.innerHTML = "";
+
+    signedList.forEach(person => {
+      const time = new Date(person.timestamp).toLocaleString("zh-TW", {
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      });
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="px-4 py-2">${person.name}</td>
+        <td class="px-4 py-2">${person.id}</td>
+        <td class="px-4 py-2">${person.note || "—"}<br /><span class="text-xs text-gray-400">🕒 ${time}</span></td>
+      `;
+      signedBody.appendChild(row);
     });
 
-    document.addEventListener("click", (e) => {
-      if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
-        menuList.classList.add("hidden");
-      }
+    const unsignedList = fullList.filter(full =>
+      !signedList.some(signed => signed.id === full.id)
+    );
+
+    unsignedList.forEach(person => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="px-4 py-2">${person.name}</td>
+        <td class="px-4 py-2">${person.id}</td>
+      `;
+      unsignedBody.appendChild(row);
     });
-  </script>
+  });
+</script>
+
   <!-- 頁尾 -->
+   <script>
+  const menuBtn = document.getElementById("menuBtn");
+  const menuList = document.getElementById("menuList");
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuList.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+      menuList.classList.add("hidden");
+    }
+  });
+</script>
+
   <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
     &copy; 2025 內湖高中軍武社 | 設計者：陳奕嘉 | 本頁由幹部簽到系統自動生成
   </footer>
