@@ -106,8 +106,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const eventsRef = db.ref("events");
-  const eventList = document.getElementById("eventList");
-
   eventsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     eventList.innerHTML = "";
@@ -157,47 +155,45 @@
     });
   });
 </script>
-  <!-- 初始化 FullCalendar -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const calendarEl = document.getElementById('calendar');
-      const detailBox = document.getElementById('eventDetail');
-      const titleEl = document.getElementById('eventTitle');
-      const dateEl = document.getElementById('eventDate');
-      const descEl = document.getElementById('eventDesc');
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const detailBox = document.getElementById('eventDetail');
+    const titleEl = document.getElementById('eventTitle');
+    const dateEl = document.getElementById('eventDate');
+    const descEl = document.getElementById('eventDesc');
 
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'zh-tw',
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek'
-        },
-          events: function(fetchInfo, successCallback, failureCallback) {
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'zh-tw',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek'
+      },
+      events: function(fetchInfo, successCallback, failureCallback) {
         eventsRef.once("value").then(snapshot => {
-    const data = snapshot.val() || {};
-    const events = Object.values(data).map(event => ({
-      title: event.title,
-      start: event.date,
-      description: event.description || '',
-      color: '#2563eb'
-    }));
-    successCallback(events);
-  }).catch(failureCallback);
-},
-
-        eventClick: function(info) {
-          info.jsEvent.preventDefault();
-          titleEl.textContent = `活動：${info.event.title}`;
-          dateEl.textContent = `日期：${info.event.start.toLocaleDateString()}`;
-          descEl.textContent = `說明：${info.event.extendedProps.description || '無'}`;
-          detailBox.classList.remove('hidden');
-        }
-      });
-
-      calendar.render();
+          const data = snapshot.val() || {};
+          const events = Object.values(data).map(event => ({
+            title: event.title,
+            start: event.date,
+            description: event.description || '',
+            color: '#2563eb'
+          }));
+          successCallback(events);
+        }).catch(failureCallback);
+      },
+      eventClick: function(info) {
+        info.jsEvent.preventDefault();
+        titleEl.textContent = `活動：${info.event.title}`;
+        dateEl.textContent = `日期：${info.event.start.toLocaleDateString()}`;
+        descEl.textContent = `說明：${info.event.extendedProps.description || '無'}`;
+        detailBox.classList.remove('hidden');
+      }
     });
-  </script>
+
+    calendar.render();
+  });
+</script>
 </body>
 </html>
