@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>社課點名 | 內湖高中軍武社</title>
@@ -84,61 +85,12 @@
     </table>
   </section>
 
-  <!-- 🧠 JavaScript -->
-  <script>
-    // 已移除重複的 fullList 定義，請保留下方 Firebase 版本的 fullList。
-
-    let signedList = [];
-
-    // 已在前方宣告 signedBody, unsignedBody, form, clearBtn，這裡不需重複宣告。
-
-    function renderLists() {
-      signedBody.innerHTML = "";
-      unsignedBody.innerHTML = "";
-
-      signedList.forEach(person => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="px-4 py-2">${person.name}</td>
-          <td class="px-4 py-2">${person.id}</td>
-          <td class="px-4 py-2">${person.note || ""}</td>
-        `;
-        signedBody.appendChild(row);
-      });
-
-      const unsignedList = fullList.filter(full =>
-        !signedList.some(signed => signed.id === full.id)
-      );
-
-      unsignedList.forEach(person => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="px-4 py-2">${person.name}</td>
-          <td class="px-4 py-2">${person.id}</td>
-        `;
-        unsignedBody.appendChild(row);
-      });
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const id = document.getElementById("id").value.trim();
-      const note = document.getElementById("note").value.trim();
-
-      if (name && id) {
-        signedList.push({ name, id, note });
-        renderLists();
-        form.reset();
-      } else {
-        alert("請填寫姓名與班級座號");
-      }
-    });
-    renderLists();
-    // End of first script block
-</script>
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<!-- 幹部簽到系統 -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
@@ -151,6 +103,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+  const auth = firebase.auth();
   const listRef = db.ref("signedList");
 
   const fullList = [
@@ -167,11 +120,31 @@
     { id: "21315", name: "蕭川閔" }, { id: "21605", name: "李緒恆" }, { id: "21606", name: "洪子皓" },
     { id: "21629", name: "游閔喬" }, { id: "21703", name: "何家濬" }
   ];
+
   const signedBody = document.getElementById("signedListBody");
   const unsignedBody = document.getElementById("unsignedListBody");
   const form = document.getElementById("checkinForm");
+  const clearBtn = document.getElementById("clearCheckinBtn");
 
-  // 提交簽到
+  // 幹部登入狀態控制清除按鈕
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      clearBtn.classList.remove("hidden");
+    } else {
+      clearBtn.classList.add("hidden");
+    }
+  });
+
+  // 清除簽到紀錄（幹部限定）
+  clearBtn.addEventListener("click", () => {
+    if (confirm("確定要清除所有簽到紀錄嗎？此操作無法復原！")) {
+      listRef.remove()
+        .then(() => alert("✅ 已清除所有簽到紀錄"))
+        .catch(err => alert("❌ 清除失敗：" + err.message));
+    }
+  });
+
+  // 提交簽到（防止重複）
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
@@ -193,34 +166,7 @@
     form.reset();
   });
 
-const auth = firebase.auth();
-const clearBtn = document.getElementById("clearCheckinBtn");
-const signedListRef = firebase.database().ref("signedList");
-
-// 登入狀態監聽
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // 幹部登入後顯示清除按鈕
-    clearBtn.classList.remove("hidden");
-  } else {
-    // 未登入則隱藏
-    clearBtn.classList.add("hidden");
-  }
-});
-
-// 清除簽到紀錄
-clearBtn.addEventListener("click", () => {
-  if (confirm("確定要清除所有簽到紀錄嗎？此操作無法復原！")) {
-    signedListRef.remove()
-      .then(() => alert("✅ 已成功清除所有簽到紀錄"))
-      .catch(err => alert("❌ 清除失敗：" + err.message));
-  }
-});
-
-  //清除簽到
-  // (已在前方宣告 signedListRef 和 clearBtn，這裡不需重複宣告)
-  // 清除簽到的事件監聽已在前方設定，這裡可移除重複程式碼。
-  // 即時更新畫面
+  // 顯示名單（已簽到與未簽到）
   listRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     const signedList = Object.values(data);
@@ -232,12 +178,11 @@ clearBtn.addEventListener("click", () => {
         year: "numeric", month: "2-digit", day: "2-digit",
         hour: "2-digit", minute: "2-digit", hour12: false
       });
-
       const row = document.createElement("tr");
       row.innerHTML = `
         <td class="px-4 py-2">${person.name}</td>
         <td class="px-4 py-2">${person.id}</td>
-        <td class="px-4 py-2">${person.note || "—"}<br /><span class="text-xs text-gray-400">🕒 ${time}</span></td>
+        <td class="px-4 py-2">${person.note || "—"}<br><span class="text-xs text-gray-400">🕒 ${time}</span></td>
       `;
       signedBody.appendChild(row);
     });
@@ -257,22 +202,7 @@ clearBtn.addEventListener("click", () => {
   });
 </script>
 
-  <!-- 頁尾 -->
-   <script>
-  const menuBtn = document.getElementById("menuBtn");
-  const menuList = document.getElementById("menuList");
 
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    menuList.classList.toggle("hidden");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
-      menuList.classList.add("hidden");
-    }
-  });
-</script>
 
   <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
     &copy; 2025 內湖高中軍武社 | 設計者：陳奕嘉 | 本頁由幹部簽到系統自動生成
