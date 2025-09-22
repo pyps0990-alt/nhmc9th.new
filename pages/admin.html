@@ -112,18 +112,17 @@
   const eventsRef = db.ref("events");
   const eventForm = document.getElementById("eventForm");
   const eventList = document.getElementById("eventList");
+    eventForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("eventTitle").value.trim();
+      const date = document.getElementById("eventDate").value;
+      const description = document.getElementById("eventDesc").value.trim();
 
-  eventForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const title = document.getElementById("eventTitle").value.trim();
-    const date = document.getElementById("eventDate").value;
-    const description = document.getElementById("eventDesc").value.trim();
-    if (title && date) {
-      eventsRef.push({ title, date, description });
-      eventForm.reset();
-    }
-  });
-
+      if (title && date) {
+        eventsRef.push({ title, date, description });
+        eventForm.reset();
+      }
+    });
   eventsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     eventList.innerHTML = "";
