@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>幹部後台 | 內湖高中軍武社</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    h1, h2, h3 { font-family: 'Oswald', sans-serif; }
+  </style>
+</head>
+<header class="bg-green-900 p-4 flex justify-between items-center">
+  <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+  <div class="relative">
+    <button id="menuBtn" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 font-semibold text-sm md:text-base">
+      ☰ 選單
+    </button>
+    <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg hidden z-50">
+      <a href="../index.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🏠 首頁</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/checkin.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📝 社課簽到</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
+      <a href="https://pyps0990-alt.github.io/nhmc9th.new/pages/about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
+    </div>
+  </div>
+</header>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+  <header class="bg-green-900 p-4 flex justify-between items-center">
+    <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社 幹部後台</h1>
+    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm md:text-base">登出</button>
+  </header>
+
+  <main class="flex-grow p-6 max-w-4xl mx-auto">
+    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">👮 幹部操作區</h2>
+    <p class="text-gray-300 mb-6 text-sm md:text-base">登入帳號：<span id="adminEmail" class="font-semibold text-white"></span></p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <a href="checkin.html" class="block bg-green-800 hover:bg-green-700 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
+        <h3 class="text-yellow-300 text-lg font-bold mb-2">📝 管理簽到系統</h3>
+        <p class="text-gray-200 text-sm">查看與清除簽到紀錄。</p>
+      </a>
+      <button class="block bg-blue-800 hover:bg-blue-700 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
+        <h3 class="text-yellow-300 text-lg font-bold mb-2">📤 匯出簽到報表</h3>
+        <p class="text-gray-200 text-sm">下載 CSV 或 Google Sheets。</p>
+      </button>
+    </div>
+    <!-- 📅 活動設定模組 -->
+    <section id="eventModule" class="mt-10">
+      <h2 class="text-xl font-bold text-yellow-300 mb-4">📅 活動設定</h2>
+      <form id="eventForm" class="space-y-4 mb-6">
+        <input type="text" id="eventTitle" placeholder="活動標題" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+        <input type="date" id="eventDate" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+        <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">➕ 新增活動</button>
+      </form>
+      <ul id="eventList" class="space-y-2 text-sm text-white"></ul>
+    </section>
+    <!-- 📣 公告管理模組 -->
+    <section id="announceModule" class="mt-10">
+      <h2 class="text-xl font-bold text-yellow-300 mb-4">📣 公告管理</h2>
+      <form id="announceForm" class="space-y-4 mb-6">
+        <textarea id="announceText" rows="3" placeholder="輸入公告內容" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
+        <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📢 發布公告</button>
+      </form>
+      <ul id="announceList" class="space-y-2 text-sm text-white"></ul>
+    </section>
+  </main>
+
+  <script>
+  const menuBtn = document.getElementById("menuBtn");
+  const menuList = document.getElementById("menuList");
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuList.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
+      menuList.classList.add("hidden");
+    }
+  });
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  announceRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    announceList.innerHTML = "";
+    Object.entries(data).forEach(([key, item]) => {
+      const time = new Date(item.timestamp).toLocaleString("zh-TW");
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+          <span>${item.text}<br><span class="text-xs text-gray-400">🕒 ${time}</span></span>
+          <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('announcements/${key}').remove()">刪除</button>
+        </div>
+      `;
+      announceList.appendChild(li);
+    });
+  });
+</script>
+<script>
+  const db = firebase.database();
+
+  // 📅 活動設定模組
+  const eventsRef = db.ref("events");
+  const eventForm = document.getElementById("eventForm");
+  const eventList = document.getElementById("eventList");
+
+  eventForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const title = document.getElementById("eventTitle").value.trim();
+    const date = document.getElementById("eventDate").value;
+    if (title && date) {
+      eventsRef.push({ title, date });
+      eventForm.reset();
+    }
+  });
+
+  eventsRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    eventList.innerHTML = "";
+    Object.entries(data).forEach(([key, event]) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+          <span>${event.date}｜${event.title}</span>
+          <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('events/${key}').remove()">取消</button>
+        </div>
+      `;
+      eventList.appendChild(li);
+    });
+  });
+
+  // 📣 公告管理模組
+  const announceRef = db.ref("announcements");
+  const announceForm = document.getElementById("announceForm");
+  const announceList = document.getElementById("announceList");
+
+  announceForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const text = document.getElementById("announceText").value.trim();
+    if (text) {
+      announceRef.push({ text, timestamp: Date.now() });
+      announceForm.reset();
+    }
+  });
+</script>
+  <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
+    &copy; 2025 內湖高中軍武社 | 幹部專屬頁面
+  </footer>
+</body>
+</html>
