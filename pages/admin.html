@@ -45,6 +45,11 @@
         <h3 class="text-yellow-300 text-lg font-bold mb-2">📤 匯出簽到報表</h3>
         <p class="text-gray-200 text-sm">下載 CSV 或 Google Sheets。</p>
       </button>
+      <!-- 返回首頁按鈕 -->
+      <button id="backHomeBtn" class="block bg-yellow-400 hover:bg-yellow-300 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
+        <h3 class="text-black text-lg font-bold mb-2">🏠 返回首頁</h3>
+        <p class="text-gray-800 text-sm">回到網站首頁</p>
+      </button>
     </div>
   </section>
 
@@ -179,6 +184,12 @@
   const menuList = document.getElementById("menuList");
   menuBtn.addEventListener("click", e => { e.stopPropagation(); menuList.classList.toggle("hidden"); });
   document.addEventListener("click", e => { if(!menuBtn.contains(e.target) && !menuList.contains(e.target)){ menuList.classList.add("hidden"); }});
+//返回首頁
+  const backHomeBtn = document.getElementById("backHomeBtn");
+  backHomeBtn.addEventListener("click", () => {
+    window.location.href = "../index.html"; // 根據 admin.html 與首頁的相對路徑調整
+  });
 </script>
 </body>
 </html>
+
