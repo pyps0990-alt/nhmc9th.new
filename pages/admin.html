@@ -45,7 +45,6 @@
         <h3 class="text-yellow-300 text-lg font-bold mb-2">📤 匯出簽到報表</h3>
         <p class="text-gray-200 text-sm">下載 CSV 或 Google Sheets。</p>
       </button>
-      <!-- 返回首頁按鈕 -->
       <button id="backHomeBtn" class="block bg-yellow-400 hover:bg-yellow-300 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
         <h3 class="text-black text-lg font-bold mb-2">🏠 返回首頁</h3>
         <p class="text-gray-800 text-sm">回到網站首頁</p>
@@ -70,10 +69,18 @@
     <h2 class="text-xl font-bold text-yellow-300 mb-4">📣 公告管理</h2>
     <form id="announceForm" class="space-y-4 mb-6">
       <textarea id="announceText" rows="3" placeholder="輸入公告內容" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
-      <input type="date" id="announceExpire" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+      <div class="flex gap-2">
+        <input type="date" id="announceExpire" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+        <input type="time" id="announceExpireTime" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+      </div>
       <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📢 發布公告</button>
     </form>
-    <ul id="announceList" class="space-y-2 text-sm text-white"></ul>
+
+    <h3 class="text-lg font-bold text-yellow-200 mb-2">🟢 生效中公告</h3>
+    <ul id="activeAnnounceList" class="space-y-2 text-sm text-white mb-4"></ul>
+
+    <h3 class="text-lg font-bold text-gray-400 mb-2">⚪ 過期公告</h3>
+    <ul id="expiredAnnounceList" class="space-y-2 text-sm text-gray-400"></ul>
   </section>
 
 </main>
@@ -103,9 +110,11 @@
   const eventForm = document.getElementById("eventForm");
   const eventList = document.getElementById("eventList");
   const announceForm = document.getElementById("announceForm");
-  const announceList = document.getElementById("announceList");
+  const activeAnnounceList = document.getElementById("activeAnnounceList");
+  const expiredAnnounceList = document.getElementById("expiredAnnounceList");
   const adminEmailEl = document.getElementById("adminEmail");
   const logoutBtn = document.getElementById("logoutBtn");
+  const backHomeBtn = document.getElementById("backHomeBtn");
 
   // 登入檢查
   auth.onAuthStateChanged(user => {
@@ -114,13 +123,13 @@
       document.getElementById("eventModule").style.display = "block";
       document.getElementById("announceModule").style.display = "block";
     } else {
-      window.location.href = "login.html"; // 未登入導向登入頁
+      window.location.href = "login.html";
     }
   });
 
-  logoutBtn.addEventListener("click", () => { auth.signOut(); });
+  logoutBtn.addEventListener("click", () => auth.signOut());
 
-  // 📅 活動設定
+  // 📝 活動設定
   eventForm.addEventListener("submit", e => {
     e.preventDefault();
     const title = document.getElementById("eventTitle").value.trim();
@@ -147,14 +156,18 @@
     });
   });
 
-  // 📣 公告管理
+  // 📢 公告管理
   announceForm.addEventListener("submit", e => {
     e.preventDefault();
     const text = document.getElementById("announceText").value.trim();
     const expireDate = document.getElementById("announceExpire").value;
-    if(text && expireDate){
+    const expireTime = document.getElementById("announceExpireTime").value;
+    if(text && expireDate && expireTime){
+      const [hours, minutes] = expireTime.split(":").map(Number);
+      const expiresAtDate = new Date(expireDate);
+      expiresAtDate.setHours(hours, minutes, 0, 0);
+      const expiresAt = expiresAtDate.getTime();
       const timestamp = Date.now();
-      const expiresAt = new Date(expireDate).getTime();
       announceRef.push({ text, timestamp, expiresAt });
       announceForm.reset();
     }
@@ -162,29 +175,38 @@
 
   announceRef.on("value", snapshot => {
     const data = snapshot.val() || {};
-    announceList.innerHTML = "";
     const now = Date.now();
+    activeAnnounceList.innerHTML = "";
+    expiredAnnounceList.innerHTML = "";
+
     Object.entries(data).forEach(([key, item]) => {
-      if(item.expiresAt && item.expiresAt < now) return;
       const time = new Date(item.timestamp).toLocaleString("zh-TW");
-      const expire = item.expiresAt ? new Date(item.expiresAt).toLocaleDateString("zh-TW") : "無期限";
-      const li = document.createElement("li");
-      li.innerHTML = `
+      const expire = item.expiresAt ? new Date(item.expiresAt).toLocaleString("zh-TW") : "無期限";
+      const liHTML = `
         <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
-          <span>${item.text}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜失效：${expire}</span></span>
+          <span>${item.text}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜截止：${expire}</span></span>
           <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('announcements/${key}').remove()">刪除</button>
         </div>
       `;
-      announceList.appendChild(li);
+      if(item.expiresAt && item.expiresAt < now){
+        expiredAnnounceList.innerHTML += liHTML;
+      } else {
+        activeAnnounceList.innerHTML += liHTML;
+      }
     });
+
+    if(activeAnnounceList.innerHTML===""){
+      activeAnnounceList.innerHTML = `<li class="text-gray-400">目前沒有生效中公告</li>`;
+    }
+    if(expiredAnnounceList.innerHTML===""){
+      expiredAnnounceList.innerHTML = `<li class="text-gray-500">目前沒有過期公告</li>`;
+    }
   });
 
   // 🏠 返回首頁
-  const backHomeBtn = document.getElementById("backHomeBtn");
   backHomeBtn.addEventListener("click", () => {
-    window.location.href = "https://pyps0990-alt.github.io/nhmc9th.new/index.html"; // 如果 admin.html 在 /admin/ 資料夾 → 改成 "../index.html"
+    window.location.href = "https://pyps0990-alt.github.io/nhmc9th.new/index.html";
   });
 </script>
 </body>
 </html>
-
