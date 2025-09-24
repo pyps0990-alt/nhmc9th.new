@@ -1,212 +1,250 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>幹部後台 | 內湖高中軍武社</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>幹部後台 | 內湖高中軍武社</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <!-- 字體 -->
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
-
-  <style>
-    body { font-family: 'Roboto', sans-serif; }
-    h1,h2,h3 { font-family: 'Oswald', sans-serif; }
-  </style>
+<style>
+body { font-family: 'Roboto', sans-serif; background:#111; color:#fff; }
+h1,h2,h3 { font-family:'Oswald', sans-serif; }
+table { border-collapse: collapse; width:100%; margin-top:10px; }
+th,td { border:1px solid #666; padding:6px; text-align:center; }
+th { background:#222; }
+.delete-btn { background:#e74c3c; color:white; border:none; cursor:pointer; padding:4px 8px; }
+.delete-btn:hover { background:#c0392b; }
+</style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
 <header class="bg-green-900 p-4 flex justify-between items-center">
-  <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社 幹部後台</h1>
-  <div>
-    <span id="adminEmail" class="font-semibold text-white mr-4"></span>
-    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm md:text-base">登出</button>
-  </div>
+<h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社 幹部後台</h1>
+<div>
+<span id="adminEmail" class="font-semibold text-white mr-4"></span>
+<button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm md:text-base">登出</button>
+</div>
 </header>
 
-<main class="flex-grow p-6 max-w-4xl mx-auto">
+<main class="flex-grow p-6 max-w-6xl mx-auto">
+<div class="mb-6">
+<button onclick="showTab('daily')" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📋 單日管理</button>
+<button onclick="showTab('summary')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">📊 總覽模式</button>
+</div>
 
-  <!-- 幹部操作區 -->
-  <section class="mb-10">
-    <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">👮 幹部操作區</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <a href="checkin.html" class="block bg-green-800 hover:bg-green-700 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
-        <h3 class="text-yellow-300 text-lg font-bold mb-2">📝 管理簽到系統</h3>
-        <p class="text-gray-200 text-sm">查看與清除簽到紀錄。</p>
-      </a>
-      <button class="block bg-blue-800 hover:bg-blue-700 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
-        <h3 class="text-yellow-300 text-lg font-bold mb-2">📤 匯出簽到報表</h3>
-        <p class="text-gray-200 text-sm">下載 CSV 或 Google Sheets。</p>
-      </button>
-      <button id="backHomeBtn" class="block bg-yellow-400 hover:bg-yellow-300 rounded-lg p-6 shadow-lg transition transform hover:scale-105">
-        <h3 class="text-black text-lg font-bold mb-2">🏠 返回首頁</h3>
-        <p class="text-gray-800 text-sm">回到網站首頁</p>
-      </button>
-    </div>
-  </section>
+<!-- 單日管理 -->
+<section id="daily" class="tab-content">
+<h2 class="text-xl font-bold text-yellow-300 mb-4">📝 單日簽到管理</h2>
+<div class="flex items-center gap-2 mb-4">
+<input type="date" id="datePicker" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<button id="loadRecordsBtn" class="bg-green-600 px-3 py-2 rounded hover:bg-green-700">載入紀錄</button>
+<button id="exportBtn" class="bg-blue-600 px-3 py-2 rounded hover:bg-blue-700">匯出 Excel</button>
+<button id="fillAbsentBtn" class="bg-red-500 px-3 py-2 rounded hover:bg-red-600">一鍵補全缺席</button>
+</div>
+<div class="overflow-x-auto">
+<table id="recordsTable" class="min-w-full text-sm">
+<thead>
+<tr>
+<th>班級座號</th><th>姓名</th><th>狀態</th><th>原因</th><th>時間</th><th>操作</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
 
-  <!-- 📅 活動設定模組 -->
-  <section id="eventModule" class="mb-10">
-    <h2 class="text-xl font-bold text-yellow-300 mb-4">📅 活動設定</h2>
-    <form id="eventForm" class="space-y-4 mb-6">
-      <input type="text" id="eventTitle" placeholder="活動標題" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-      <input type="date" id="eventDate" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-      <textarea id="eventDesc" rows="3" placeholder="活動說明（選填）" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
-      <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">➕ 新增活動</button>
-    </form>
-    <ul id="eventList" class="space-y-2 text-sm text-white"></ul>
-  </section>
-
-  <!-- 📣 公告管理模組 -->
-  <section id="announceModule" class="mb-10">
-    <h2 class="text-xl font-bold text-yellow-300 mb-4">📣 公告管理</h2>
-    <form id="announceForm" class="space-y-4 mb-6">
-      <textarea id="announceText" rows="3" placeholder="輸入公告內容" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
-      <div class="flex gap-2">
-        <input type="date" id="announceExpire" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-        <input type="time" id="announceExpireTime" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-      </div>
-      <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📢 發布公告</button>
-    </form>
-
-    <h3 class="text-lg font-bold text-yellow-200 mb-2">🟢 生效中公告</h3>
-    <ul id="activeAnnounceList" class="space-y-2 text-sm text-white mb-4"></ul>
-
-    <h3 class="text-lg font-bold text-gray-400 mb-2">⚪ 過期公告</h3>
-    <ul id="expiredAnnounceList" class="space-y-2 text-sm text-gray-400"></ul>
-  </section>
-
+<!-- 總覽模式 -->
+<section id="summary" class="tab-content hidden">
+<h2 class="text-xl font-bold text-yellow-300 mb-4">📊 總覽模式</h2>
+<div class="flex items-center gap-2 mb-4">
+<label>開始：<input type="date" id="startDate" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></label>
+<label>結束：<input type="date" id="endDate" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></label>
+<button id="loadSummaryBtn" class="bg-green-600 px-3 py-2 rounded hover:bg-green-700">載入總覽</button>
+<button id="exportSummaryBtn" class="bg-blue-600 px-3 py-2 rounded hover:bg-blue-700">匯出總覽</button>
+</div>
+<div class="overflow-x-auto">
+<table id="summaryTable" class="min-w-full text-sm">
+<thead><tr><th>班級座號</th><th>姓名</th><th>原因</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
 </main>
 
 <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
-  &copy; 2025 內湖高中軍武社 | 幹部專屬頁面
+&copy; 2025 內湖高中軍武社 | 幹部專屬頁面
 </footer>
 
 <script>
-  // Firebase 初始化
-  const firebaseConfig = {
-    apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
-    authDomain: "nhmc9th-672f6.firebaseapp.com",
-    databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
-    projectId: "nhmc9th-672f6",
-    storageBucket: "nhmc9th-672f6.appspot.com",
-    messagingSenderId: "470057381540",
-    appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
+// ===== Firebase 初始化 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+  authDomain: "nhmc9th-672f6.firebaseapp.com",
+  databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
+  projectId: "nhmc9th-672f6",
+  storageBucket: "nhmc9th-672f6.appspot.com",
+  messagingSenderId: "470057381540",
+  appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-  const eventsRef = db.ref("events");
-  const announceRef = db.ref("announcements");
+// ===== DOM 元素 =====
+const adminEmailEl=document.getElementById("adminEmail");
+const logoutBtn=document.getElementById("logoutBtn");
+auth.onAuthStateChanged(u=>{if(u) adminEmailEl.textContent=u.email; else window.location.href="login.html";});
+logoutBtn.addEventListener("click",()=>auth.signOut());
 
-  const eventForm = document.getElementById("eventForm");
-  const eventList = document.getElementById("eventList");
-  const announceForm = document.getElementById("announceForm");
-  const activeAnnounceList = document.getElementById("activeAnnounceList");
-  const expiredAnnounceList = document.getElementById("expiredAnnounceList");
-  const adminEmailEl = document.getElementById("adminEmail");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const backHomeBtn = document.getElementById("backHomeBtn");
+function showTab(tab){document.querySelectorAll('.tab-content').forEach(s=>s.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');}
 
-  // 登入檢查
-  auth.onAuthStateChanged(user => {
-    if(user){
-      adminEmailEl.textContent = user.email;
-      document.getElementById("eventModule").style.display = "block";
-      document.getElementById("announceModule").style.display = "block";
-    } else {
-      window.location.href = "login.html";
-    }
+// ===== Firebase 參考 =====
+const studentsRef = db.ref("students");
+const checkinRef = db.ref("checkinRecords");
+
+// ===== 單日模式 =====
+const datePicker=document.getElementById("datePicker");
+const recordsTableBody=document.querySelector("#recordsTable tbody");
+const loadRecordsBtn=document.getElementById("loadRecordsBtn");
+const exportBtn=document.getElementById("exportBtn");
+const fillAbsentBtn=document.getElementById("fillAbsentBtn");
+
+let currentDate=null;
+let currentData={};
+let studentsList={};
+
+studentsRef.on("value", snap=>{studentsList=snap.val()||{}; if(currentDate) loadRecords();});
+loadRecordsBtn.addEventListener("click",loadRecords);
+exportBtn.addEventListener("click",exportRecords);
+fillAbsentBtn.addEventListener("click",fillAbsent);
+
+async function loadRecords(){
+  currentDate=datePicker.value;
+  if(!currentDate){alert("請選擇日期！");return;}
+  recordsTableBody.innerHTML="<tr><td colspan='6'>載入中...</td></tr>";
+
+  const snapshot=await checkinRef.child(currentDate).once("value");
+  const checkinData=snapshot.val()||{};
+  currentData={...checkinData};
+
+  Object.keys(studentsList).forEach(id=>{
+    if(!currentData[id]) currentData[id]={name:studentsList[id].name,status:"缺席",reason:"",time:""};
   });
 
-  logoutBtn.addEventListener("click", () => auth.signOut());
+  renderTable();
+}
 
-  // 📝 活動設定
-  eventForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const title = document.getElementById("eventTitle").value.trim();
-    const date = document.getElementById("eventDate").value;
-    const description = document.getElementById("eventDesc").value.trim();
-    if(title && date){
-      eventsRef.push({ title, date, description });
-      eventForm.reset();
-    }
+function renderTable(){
+  recordsTableBody.innerHTML="";
+  Object.entries(currentData).forEach(([id,r])=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${id}</td><td>${r.name||""}</td>
+    <td><select onchange="updateStatus('${currentDate}','${id}',this.value)">
+      <option value="出席" ${r.status==="出席"?"selected":""}>出席</option>
+      <option value="請假" ${r.status==="請假"?"selected":""}>請假</option>
+      <option value="缺席" ${r.status==="缺席"?"selected":""}>缺席</option>
+    </select></td>
+    <td><input type="text" value="${r.reason||""}" onchange="updateReason('${currentDate}','${id}',this.value)"/></td>
+    <td>${r.time||""}</td>
+    <td><button class="delete-btn" onclick="deleteRecord('${currentDate}','${id}')">刪除</button></td>`;
+    recordsTableBody.appendChild(tr);
   });
+}
 
-  eventsRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    eventList.innerHTML = "";
-    Object.entries(data).forEach(([key, event]) => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
-          <span>${event.date}｜${event.title}</span>
-          <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('events/${key}').remove()">取消</button>
-        </div>
-      `;
-      eventList.appendChild(li);
-    });
+function updateStatus(date,id,status){
+  const now=new Date().toLocaleString("zh-TW");
+  db.ref(`checkinRecords/${date}/${id}`).update({status,time:now});
+  currentData[id].status=status; currentData[id].time=now;
+}
+
+function updateReason(date,id,reason){
+  const now=new Date().toLocaleString("zh-TW");
+  db.ref(`checkinRecords/${date}/${id}`).update({reason,time:now});
+  currentData[id].reason=reason; currentData[id].time=now;
+}
+
+function deleteRecord(date,id){if(confirm("確定刪除？")){db.ref(`checkinRecords/${date}/${id}`).remove().then(()=>loadRecords());}}
+
+function fillAbsent(){
+  Object.keys(currentData).forEach(id=>{
+    if(!currentData[id].status){updateStatus(currentDate,id,"缺席");}
   });
+  alert("缺席學生已補全");
+}
 
-  // 📢 公告管理
-  announceForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const text = document.getElementById("announceText").value.trim();
-    const expireDate = document.getElementById("announceExpire").value;
-    const expireTime = document.getElementById("announceExpireTime").value;
-    if(text && expireDate && expireTime){
-      const [hours, minutes] = expireTime.split(":").map(Number);
-      const expiresAtDate = new Date(expireDate);
-      expiresAtDate.setHours(hours, minutes, 0, 0);
-      const expiresAt = expiresAtDate.getTime();
-      const timestamp = Date.now();
-      announceRef.push({ text, timestamp, expiresAt });
-      announceForm.reset();
-    }
+function exportRecords(){
+  if(!currentDate){alert("請先選擇日期！");return;}
+  const rows=[["班級座號","姓名","原因"]];
+  Object.entries(currentData).forEach(([id,r])=>rows.push([id,r.name||"",r.reason||""]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"簽到紀錄");
+  XLSX.writeFile(wb,`簽到紀錄_${currentDate}.xlsx`);
+}
+
+// ===== 總覽模式 =====
+const startDate=document.getElementById("startDate");
+const endDate=document.getElementById("endDate");
+const summaryTableBody=document.querySelector("#summaryTable tbody");
+const loadSummaryBtn=document.getElementById("loadSummaryBtn");
+const exportSummaryBtn=document.getElementById("exportSummaryBtn");
+
+loadSummaryBtn.addEventListener("click",loadSummary);
+exportSummaryBtn.addEventListener("click",exportSummary);
+
+async function loadSummary(){
+  const start=startDate.value,end=endDate.value;
+  if(!start||!end){alert("請選擇日期範圍！");return;}
+  summaryTableBody.innerHTML="<tr><td colspan='3'>計算中...</td></tr>";
+  let summary={};
+
+  Object.keys(studentsList).forEach(id=>{summary[id]={name:studentsList[id].name,reason:""};});
+
+  let current=new Date(start),endD=new Date(end);
+  while(current<=endD){
+    const dateStr=current.toISOString().slice(0,10);
+    const snapshot=await checkinRef.child(dateStr).once("value");
+    const data=snapshot.val()||{};
+    Object.keys(data).forEach(id=>{if(data[id].reason) summary[id].reason=data[id].reason;});
+    current.setDate(current.getDate()+1);
+  }
+
+  summaryTableBody.innerHTML="";
+  Object.keys(summary).forEach(id=>{
+    const s=summary[id];
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${id}</td><td>${s.name}</td><td>${s.reason}</td>`;
+    summaryTableBody.appendChild(tr);
   });
+}
 
-  announceRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    const now = Date.now();
-    activeAnnounceList.innerHTML = "";
-    expiredAnnounceList.innerHTML = "";
+function exportSummary(){
+  if(summaryTableBody.children.length===0){alert("請先載入總覽資料！");return;}
+  const rows=[["班級座號","姓名","原因"]];
+  Array.from(summaryTableBody.children).forEach(tr=>rows.push(Array.from(tr.children).map(td=>td.innerText)));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"總覽");
+  XLSX.writeFile(wb,"簽到總覽.xlsx");
+}
 
-    Object.entries(data).forEach(([key, item]) => {
-      const time = new Date(item.timestamp).toLocaleString("zh-TW");
-      const expire = item.expiresAt ? new Date(item.expiresAt).toLocaleString("zh-TW") : "無期限";
-      const liHTML = `
-        <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
-          <span>${item.text}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜截止：${expire}</span></span>
-          <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('announcements/${key}').remove()">刪除</button>
-        </div>
-      `;
-      if(item.expiresAt && item.expiresAt < now){
-        expiredAnnounceList.innerHTML += liHTML;
-      } else {
-        activeAnnounceList.innerHTML += liHTML;
-      }
-    });
+// ===== 自動檢查 Firebase 資料存在 =====
+async function checkDatabaseExistence() {
+  const studentsSnap = await studentsRef.once("value");
+  if(!studentsSnap.exists()) alert("⚠️ students 資料表不存在，請先建立學生名單！");
+  
+  const recordsSnap = await checkinRef.once("value");
+  if(!recordsSnap.exists()) console.log("⚠️ checkinRecords 資料表尚未建立，單日模式將自動產生缺席紀錄。");
+}
 
-    if(activeAnnounceList.innerHTML===""){
-      activeAnnounceList.innerHTML = `<li class="text-gray-400">目前沒有生效中公告</li>`;
-    }
-    if(expiredAnnounceList.innerHTML===""){
-      expiredAnnounceList.innerHTML = `<li class="text-gray-500">目前沒有過期公告</li>`;
-    }
-  });
+// 頁面載入時執行
+window.addEventListener("load", checkDatabaseExistence);
 
-  // 🏠 返回首頁
-  backHomeBtn.addEventListener("click", () => {
-    window.location.href = "https://pyps0990-alt.github.io/nhmc9th.new/index.html";
-  });
 </script>
 </body>
 </html>
