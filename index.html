@@ -19,9 +19,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Roboto', sans-serif; opacity: 1; transition: opacity 0.4s ease; }
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      opacity: 1; 
+      transition: opacity 0.4s ease; 
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
     body.fade-out { opacity: 0; }
     h1,h2,h3 { font-family: 'Oswald', sans-serif; }
+
+    header { padding-top: calc(1rem + env(safe-area-inset-top)); }
+    main, section { padding-left: calc(1rem + env(safe-area-inset-left)); padding-right: calc(1rem + env(safe-area-inset-right)); }
   </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -103,7 +114,6 @@
   </a>
 </main>
 
-<!-- Firebase + JS -->
 <script>
   // Firebase 初始化
   const firebaseConfig = {
@@ -176,14 +186,18 @@
     const now = Date.now();
     announcementList.innerHTML = "";
     Object.entries(data).forEach(([key, item]) => {
-      if(item.expiresAt && item.expiresAt < now) return;
       const time = item.timestamp ? new Date(item.timestamp).toLocaleDateString("zh-TW") : "";
+      const expire = item.expiresAt ? new Date(item.expiresAt).toLocaleDateString("zh-TW") : "";
       const li = document.createElement("li");
-      li.innerHTML = `<span class="cursor-pointer announcement-item" data-event-id="${key}">${item.text || ""}<br><span class="text-xs text-gray-400">🕒 發布：${time}</span></span>`;
+      if(!item.expiresAt || item.expiresAt >= now){
+        li.innerHTML = `<span class="cursor-pointer announcement-item" data-event-id="${key}">${item.text || ""}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜失效：${expire || "無期限"}</span></span>`;
+      } else {
+        li.innerHTML = `<span class="text-gray-500 line-through">${item.text || ""}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜失效：${expire}</span></span>`;
+      }
       announcementList.appendChild(li);
     });
     if(announcementList.innerHTML===""){
-      announcementList.innerHTML = `<li class="text-gray-400">目前沒有有效公告</li>`;
+      announcementList.innerHTML = `<li class="text-gray-400">目前沒有公告</li>`;
     }
 
     // 點擊公告跳 schedule.html
