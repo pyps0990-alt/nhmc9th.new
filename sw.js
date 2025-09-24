@@ -4,8 +4,14 @@ self.addEventListener('install', event => {
       return cache.addAll([
         '/',
         '/index.html',
-        '/style.css',
-        '/script.js',
+        '/pages/about.html',
+        '/pages/attendance.html',
+        '/pages/admin.html',
+        '/pages/checkin.html',
+        '/pages/finance.html',
+        '/pages/knowleddge.html',
+        '/pages/map.html',
+        '/pages/schedule.html',
         '/assets/images/NHMC.png'
       ]);
     })
