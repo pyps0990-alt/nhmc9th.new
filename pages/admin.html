@@ -66,6 +66,7 @@
       <h2 class="text-xl font-bold text-yellow-300 mb-4">📣 公告管理</h2>
       <form id="announceForm" class="space-y-4 mb-6">
         <textarea id="announceText" rows="3" placeholder="輸入公告內容" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
+        <input type="date" id="announceExpire" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
         <button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📢 發布公告</button>
       </form>
       <ul id="announceList" class="space-y-2 text-sm text-white"></ul>
@@ -90,20 +91,28 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
   announceRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    announceList.innerHTML = "";
-    Object.entries(data).forEach(([key, item]) => {
-      const time = new Date(item.timestamp).toLocaleString("zh-TW");
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
-          <span>${item.text}<br><span class="text-xs text-gray-400">🕒 ${time}</span></span>
-          <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('announcements/${key}').remove()">刪除</button>
-        </div>
-      `;
-      announceList.appendChild(li);
-    });
+  const data = snapshot.val() || {};
+  announceList.innerHTML = "";
+  const now = Date.now();
+
+  Object.entries(data).forEach(([key, item]) => {
+    if (item.expiresAt && item.expiresAt < now) return; // 跳過過期公告
+
+    const time = new Date(item.timestamp).toLocaleString("zh-TW");
+    const expire = item.expiresAt ? new Date(item.expiresAt).toLocaleDateString("zh-TW") : "無期限";
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+        <span>${item.text}<br>
+          <span class="text-xs text-gray-400">🕒 發布：${time}｜失效：${expire}</span>
+        </span>
+        <button class="text-red-400 hover:text-red-600 text-xs" onclick="firebase.database().ref('announcements/${key}').remove()">刪除</button>
+      </div>
+    `;
+    announceList.appendChild(li);
   });
+});
 </script>
 <script>
   const db = firebase.database();
@@ -144,16 +153,22 @@
   const announceList = document.getElementById("announceList");
 
   announceForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const text = document.getElementById("announceText").value.trim();
-    if (text) {
-      announceRef.push({ text, timestamp: Date.now() });
-      announceForm.reset();
-    }
-  });
+  e.preventDefault();
+  const text = document.getElementById("announceText").value.trim();
+  const expireDate = document.getElementById("announceExpire").value;
+
+  if (text && expireDate) {
+    const timestamp = Date.now();
+    const expiresAt = new Date(expireDate).getTime();
+
+    announceRef.push({ text, timestamp, expiresAt });
+    announceForm.reset();
+  }
+});
 </script>
   <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
     &copy; 2025 內湖高中軍武社 | 幹部專屬頁面
   </footer>
 </body>
 </html>
+
