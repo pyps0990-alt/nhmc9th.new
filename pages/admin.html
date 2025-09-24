@@ -179,15 +179,10 @@
     });
   });
 
-  // 選單
-  const menuBtn = document.getElementById("menuBtn");
-  const menuList = document.getElementById("menuList");
-  menuBtn.addEventListener("click", e => { e.stopPropagation(); menuList.classList.toggle("hidden"); });
-  document.addEventListener("click", e => { if(!menuBtn.contains(e.target) && !menuList.contains(e.target)){ menuList.classList.add("hidden"); }});
-//返回首頁
+  // 🏠 返回首頁
   const backHomeBtn = document.getElementById("backHomeBtn");
   backHomeBtn.addEventListener("click", () => {
-    window.location.href = "../index.html"; // 根據 admin.html 與首頁的相對路徑調整
+    window.location.href = "index.html"; // 如果 admin.html 在 /admin/ 資料夾 → 改成 "../index.html"
   });
 </script>
 </body>
