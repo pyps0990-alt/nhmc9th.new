@@ -80,19 +80,30 @@ th { background:#222; }
 
 <!-- 單日簽到模組 -->
 <section id="dailyModule" class="tab-content">
-<h2 class="text-xl font-bold text-yellow-300 mb-4">📝 單日簽到管理</h2>
-<div class="flex items-center gap-2 mb-4">
-<input type="date" id="datePicker" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-<button id="loadRecordsBtn" class="bg-green-600 px-3 py-2 rounded hover:bg-green-700">載入紀錄</button>
-<button id="exportBtn" class="bg-blue-600 px-3 py-2 rounded hover:bg-blue-700">匯出 Excel</button>
-<button id="fillAbsentBtn" class="bg-red-500 px-3 py-2 rounded hover:bg-red-600">一鍵補全缺席</button>
-</div>
-<div class="overflow-x-auto">
-<table id="recordsTable" class="min-w-full text-sm">
-<thead><tr><th>班級座號</th><th>姓名</th><th>狀態</th><th>原因</th><th>時間</th><th>操作</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+  <h2 class="text-xl font-bold text-yellow-300 mb-4">📝 單日簽到管理</h2>
+  <div class="flex flex-wrap items-center gap-2 mb-4">
+    <input type="date" id="datePicker" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+    <button id="loadRecordsBtn" class="bg-green-600 px-3 py-2 rounded hover:bg-green-700">載入紀錄</button>
+    <button id="exportBtn" class="bg-blue-600 px-3 py-2 rounded hover:bg-blue-700">匯出 Excel</button>
+    <button id="fillAbsentBtn" class="bg-red-500 px-3 py-2 rounded hover:bg-red-600">一鍵補全缺席</button>
+  </div>
+  <div class="overflow-x-auto border border-gray-700 rounded">
+    <table id="recordsTable" class="min-w-full text-sm divide-y divide-gray-700">
+      <thead class="bg-gray-900 sticky top-0">
+        <tr>
+          <th class="px-4 py-2 text-left text-yellow-300">班級座號</th>
+          <th class="px-4 py-2 text-left text-yellow-300">姓名</th>
+          <th class="px-4 py-2 text-left text-yellow-300">狀態</th>
+          <th class="px-4 py-2 text-left text-yellow-300">原因</th>
+          <th class="px-4 py-2 text-left text-yellow-300">時間</th>
+          <th class="px-4 py-2 text-center text-yellow-300">操作</th>
+        </tr>
+      </thead>
+      <tbody class="bg-gray-800 divide-y divide-gray-700">
+        <!-- 紀錄列由 JS 動態生成 -->
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <!-- 總覽模式 -->
