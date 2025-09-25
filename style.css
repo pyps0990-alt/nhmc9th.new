@@ -1,0 +1,77 @@
+/* ---------- 原本 index.html style ---------- */
+body { 
+  font-family: 'Roboto', sans-serif; 
+  opacity: 1; 
+  transition: opacity 0.4s ease; 
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+body.fade-out { opacity: 0; }
+
+h1,h2,h3 { font-family: 'Oswald', sans-serif; }
+
+header { padding-top: calc(1rem + env(safe-area-inset-top)); }
+
+main, section { 
+  padding-left: calc(1rem + env(safe-area-inset-left)); 
+  padding-right: calc(1rem + env(safe-area-inset-right)); 
+}
+
+/* ---------- 絲滑過渡 ---------- */
+a, button, .smooth-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- 卡片滑動縮放效果 ---------- */
+.smooth-card {
+  transform: translateY(0px);
+  opacity: 1;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.smooth-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* ---------- 滾動淡入效果 ---------- */
+.fade-up-smooth {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.fade-up-smooth.aos-animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- 選單淡入滑動效果 ---------- */
+.menu-smooth {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.menu-smooth.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menu-smooth {
+  transition: all 0.3s ease;
+  transform: scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+}
+.menu-smooth.show {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+body.fade-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
