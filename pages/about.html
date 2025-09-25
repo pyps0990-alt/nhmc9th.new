@@ -27,7 +27,7 @@
     <button id="menuBtn" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 font-semibold text-sm md:text-base">
       ☰ 選單
     </button>
-    <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg hidden z-50">
+    <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg z-50 menu-smooth hidden">
       <a href="../index.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🏠 首頁</a>
       <a href="map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
       <a href="schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
@@ -99,16 +99,30 @@
     </div>
   </section>
   <script>
+    // -------------------------
+    // 選單開關（精美動畫版）
+    // -------------------------
     const menuBtn = document.getElementById("menuBtn");
     const menuList = document.getElementById("menuList");
-
-    menuBtn.addEventListener("click", () => {
-      menuList.classList.toggle("hidden");
+    
+    // 展開 / 收合選單
+    menuBtn.addEventListener("click", e => {
+      e.stopPropagation(); // 阻止事件冒泡到 document
+      if (menuList.classList.contains("hidden")) {
+        menuList.classList.remove("hidden");
+        setTimeout(() => menuList.classList.add("show"), 10);
+      } else {
+        menuList.classList.remove("show");
+        setTimeout(() => menuList.classList.add("hidden"), 350);
+      }
     });
-
-    document.addEventListener("click", (e) => {
-      if (!menuBtn.contains(e.target) && !menuList.contains(e.target)) {
-        menuList.classList.add("hidden");
+    
+    // 點擊頁面其他區域時收合選單
+    document.addEventListener("click", e => {
+      const clickedOutside = !menuBtn.contains(e.target) && !menuList.contains(e.target);
+      if (clickedOutside && menuList.classList.contains("show")) {
+        menuList.classList.remove("show");
+        setTimeout(() => menuList.classList.add("hidden"), 350);
       }
     });
   </script>
@@ -121,4 +135,5 @@
   </footer>
 </body>
 </html>
+
 
