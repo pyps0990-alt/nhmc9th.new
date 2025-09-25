@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>幹部後台 | 內湖高中軍武社</title>
 
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- XLSX -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -132,7 +135,9 @@ th { background:#222; }
 </footer>
 
 <script>
-// ===== Firebase 初始化 =====
+document.addEventListener("DOMContentLoaded",()=>{
+
+// Firebase 初始化
 const firebaseConfig = {
   apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
   authDomain: "nhmc9th-672f6.firebaseapp.com",
@@ -143,12 +148,13 @@ const firebaseConfig = {
   appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+const auth=firebase.auth();
+const db=firebase.database();
 
 // DOM
 const adminEmailEl=document.getElementById("adminEmail");
 const logoutBtn=document.getElementById("logoutBtn");
+const tabBtns=document.querySelectorAll(".tab-btn");
 
 // 登入檢查
 auth.onAuthStateChanged(u=>{
@@ -158,10 +164,14 @@ auth.onAuthStateChanged(u=>{
 logoutBtn.addEventListener("click",()=>auth.signOut());
 
 // Tab 切換
-document.querySelectorAll(".tab-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-  document.getElementById(btn.dataset.target).classList.add("active");});
+tabBtns.forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+    document.getElementById(btn.dataset.target).classList.add("active");
+  });
 });
+// 初始顯示第一個 Tab
+document.querySelector(".tab-content").classList.add("active");
 
 // Firebase 參考
 const studentsRef=db.ref("students");
@@ -172,7 +182,8 @@ const announceRef=db.ref("announcements");
 // ===== 活動管理 =====
 const eventForm=document.getElementById("eventForm");
 const eventList=document.getElementById("eventList");
-eventForm.addEventListener("submit",e=>{e.preventDefault();
+eventForm.addEventListener("submit",e=>{
+  e.preventDefault();
   const title=document.getElementById("eventTitle").value.trim();
   const date=document.getElementById("eventDate").value;
   const desc=document.getElementById("eventDesc").value.trim();
@@ -194,15 +205,16 @@ eventsRef.on("value",snap=>{
 const announceForm=document.getElementById("announceForm");
 const activeAnnounceList=document.getElementById("activeAnnounceList");
 const expiredAnnounceList=document.getElementById("expiredAnnounceList");
-announceForm.addEventListener("submit",e=>{e.preventDefault();
+announceForm.addEventListener("submit",e=>{
+  e.preventDefault();
   const text=document.getElementById("announceText").value.trim();
   const expireDate=document.getElementById("announceExpire").value;
   const expireTime=document.getElementById("announceExpireTime").value;
   if(text && expireDate && expireTime){
     const [h,m]=expireTime.split(":").map(Number);
     const expiresAt=new Date(expireDate); expiresAt.setHours(h,m,0,0);
-    const timestamp=Date.now();
-    announceRef.push({text,timestamp,expiresAt:expiresAt.getTime()}); announceForm.reset();
+    announceRef.push({text,timestamp:Date.now(),expiresAt:expiresAt.getTime()});
+    announceForm.reset();
   }
 });
 announceRef.on("value",snap=>{
@@ -221,10 +233,9 @@ announceRef.on("value",snap=>{
   if(expiredAnnounceList.innerHTML==="") expiredAnnounceList.innerHTML=`<li class="text-gray-500">目前沒有過期公告</li>`;
 });
 
-// ===== 學生管理模組 =====
+// ===== 學生管理 =====
 const studentForm=document.getElementById("studentForm");
 const studentTable=document.getElementById("studentTable").querySelector("tbody");
-
 studentsRef.on("value",snap=>{
   const data=snap.val()||{};
   studentTable.innerHTML="";
@@ -236,9 +247,7 @@ studentsRef.on("value",snap=>{
   studentTable.querySelectorAll(".delete-btn").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const id=btn.dataset.id;
-      if(confirm(`確定要刪除 ${id} ${data[id].name} ?`)){
-        studentsRef.child(id).remove();
-      }
+      if(confirm(`確定要刪除 ${id} ${data[id].name} ?`)) studentsRef.child(id).remove();
     });
   });
 });
@@ -249,26 +258,23 @@ studentForm.addEventListener("submit",e=>{
   if(id && name){studentsRef.child(id).set({name}); studentForm.reset();}
 });
 
-// ===== 這裡可接入單日簽到、總覽模式完整 JS =====
-<script>
-// ===== 單日簽到 JS =====
-const datePicker = document.getElementById("datePicker");
-const loadRecordsBtn = document.getElementById("loadRecordsBtn");
-const recordsTable = document.getElementById("recordsTable").querySelector("tbody");
-const exportBtn = document.getElementById("exportBtn");
-const fillAbsentBtn = document.getElementById("fillAbsentBtn");
+// ===== 單日簽到 =====
+const datePicker=document.getElementById("datePicker");
+const loadRecordsBtn=document.getElementById("loadRecordsBtn");
+const recordsTable=document.getElementById("recordsTable").querySelector("tbody");
+const exportBtn=document.getElementById("exportBtn");
+const fillAbsentBtn=document.getElementById("fillAbsentBtn");
 
 async function loadDailyRecords(dateStr){
-  const snapshot = await studentsRef.get();
-  const students = snapshot.val() || {};
-  const checkSnap = await checkinRef.child(dateStr).get();
-  const records = checkSnap.val() || {};
-
+  const snapshot=await studentsRef.get();
+  const students=snapshot.val()||{};
+  const checkSnap=await checkinRef.child(dateStr).get();
+  const records=checkSnap.val()||{};
   recordsTable.innerHTML="";
   Object.entries(students).forEach(([id,info])=>{
-    const rec = records[id] || {status:"未簽到", reason:"", time:""};
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
+    const rec=records[id]||{status:"未簽到",reason:"",time:""};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
       <td>${id}</td>
       <td>${info.name}</td>
       <td><select class="status">
@@ -281,81 +287,64 @@ async function loadDailyRecords(dateStr){
       <td><button class="delete-btn">刪除</button></td>
     `;
     recordsTable.appendChild(tr);
-
-    // 刪除按鈕
-    tr.querySelector(".delete-btn").addEventListener("click",()=>{
-      checkinRef.child(dateStr).child(id).remove();
-      tr.remove();
-    });
-
-    // 自動更新 Firebase
-    tr.querySelector(".status").addEventListener("change", e=>{
-      checkinRef.child(dateStr).child(id).update({status:e.target.value});
-    });
-    tr.querySelector(".reason").addEventListener("change", e=>{
-      checkinRef.child(dateStr).child(id).update({reason:e.target.value});
-    });
-    tr.querySelector(".time").addEventListener("change", e=>{
-      checkinRef.child(dateStr).child(id).update({time:e.target.value});
-    });
+    // 刪除
+    tr.querySelector(".delete-btn").addEventListener("click",()=>{checkinRef.child(dateStr).child(id).remove(); tr.remove();});
+    // 自動更新
+    tr.querySelector(".status").addEventListener("change",e=>{checkinRef.child(dateStr).child(id).update({status:e.target.value});});
+    tr.querySelector(".reason").addEventListener("change",e=>{checkinRef.child(dateStr).child(id).update({reason:e.target.value});});
+    tr.querySelector(".time").addEventListener("change",e=>{checkinRef.child(dateStr).child(id).update({time:e.target.value});});
   });
 }
-
 loadRecordsBtn.addEventListener("click",()=>{
-  const dateStr = datePicker.value;
+  const dateStr=datePicker.value;
   if(!dateStr){alert("請選擇日期"); return;}
   loadDailyRecords(dateStr);
 });
-
-// 一鍵補全缺席
 fillAbsentBtn.addEventListener("click",()=>{
-  const dateStr = datePicker.value;
+  const dateStr=datePicker.value;
   if(!dateStr){alert("請選擇日期"); return;}
   Array.from(recordsTable.rows).forEach(row=>{
-    const statusSelect = row.querySelector(".status");
+    const statusSelect=row.querySelector(".status");
     if(statusSelect.value==="未簽到") statusSelect.value="缺席";
-    const id = row.cells[0].textContent;
+    const id=row.cells[0].textContent;
     checkinRef.child(dateStr).child(id).update({status:"缺席"});
   });
 });
-
-// 匯出 Excel 單日
 exportBtn.addEventListener("click",()=>{
-  const dateStr = datePicker.value;
+  const dateStr=datePicker.value;
   if(!dateStr){alert("請選擇日期"); return;}
-  const wb = XLSX.utils.book_new();
-  const data = [["班級座號","姓名","原因"]];
+  const wb=XLSX.utils.book_new();
+  const data=[["班級座號","姓名","原因"]];
   Array.from(recordsTable.rows).forEach(row=>{
     const id=row.cells[0].textContent;
     const name=row.cells[1].textContent;
     const reason=row.querySelector(".reason").value;
     data.push([id,name,reason]);
   });
-  const ws = XLSX.utils.aoa_to_sheet(data);
+  const ws=XLSX.utils.aoa_to_sheet(data);
   XLSX.utils.book_append_sheet(wb,ws,"簽到");
   XLSX.writeFile(wb, `簽到-${dateStr}.xlsx`);
 });
 
-// ===== 總覽模式 JS =====
-const startDate = document.getElementById("startDate");
-const endDate = document.getElementById("endDate");
-const loadSummaryBtn = document.getElementById("loadSummaryBtn");
-const exportSummaryBtn = document.getElementById("exportSummaryBtn");
-const summaryTable = document.getElementById("summaryTable").querySelector("tbody");
+// ===== 總覽模式 =====
+const startDate=document.getElementById("startDate");
+const endDate=document.getElementById("endDate");
+const loadSummaryBtn=document.getElementById("loadSummaryBtn");
+const exportSummaryBtn=document.getElementById("exportSummaryBtn");
+const summaryTable=document.getElementById("summaryTable").querySelector("tbody");
 
 async function loadSummary(){
-  const sDate = startDate.value;
-  const eDate = endDate.value;
-  if(!sDate || !eDate){alert("請選擇日期"); return;}
-  const snapshot = await studentsRef.get();
-  const students = snapshot.val() || {};
-  const recordsSnap = await checkinRef.get();
-  const allRecords = recordsSnap.val() || {};
-
+  const sDate=startDate.value;
+  const eDate=endDate.value;
+  if(!sDate||!eDate){alert("請選擇日期"); return;}
+  const snapshot=await studentsRef.get();
+  const students=snapshot.val()||{};
+  const recordsSnap=await checkinRef.get();
+  const allRecords=recordsSnap.val()||{};
   summaryTable.innerHTML="";
   Object.entries(students).forEach(([id,info])=>{
     let reasons=[];
-    for(const [date, recs] of Object.entries(allRecords)){
+    for(const [date,recs] of Object.entries(allRecords)){
       if(date>=sDate && date<=eDate && recs[id] && recs[id].status==="缺席") reasons.push(recs[id].reason||"");
     }
     const tr=document.createElement("tr");
@@ -363,15 +352,11 @@ async function loadSummary(){
     summaryTable.appendChild(tr);
   });
 }
-
-// 載入總覽
-loadSummaryBtn.addEventListener("click", loadSummary);
-
-// 匯出總覽
+loadSummaryBtn.addEventListener("click",loadSummary);
 exportSummaryBtn.addEventListener("click",()=>{
-  const sDate = startDate.value;
-  const eDate = endDate.value;
-  if(!sDate || !eDate){alert("請選擇日期"); return;}
+  const sDate=startDate.value;
+  const eDate=endDate.value;
+  if(!sDate||!eDate){alert("請選擇日期"); return;}
   const wb=XLSX.utils.book_new();
   const data=[["班級座號","姓名","原因"]];
   Array.from(summaryTable.rows).forEach(row=>{
@@ -384,6 +369,8 @@ exportSummaryBtn.addEventListener("click",()=>{
   XLSX.utils.book_append_sheet(wb,ws,"總覽");
   XLSX.writeFile(wb, `總覽-${sDate}-to-${eDate}.xlsx`);
 });
+
+}); // DOMContentLoaded
 </script>
 </body>
 </html>
