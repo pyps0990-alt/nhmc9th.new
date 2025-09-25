@@ -114,18 +114,26 @@ th { background:#222; }
 
 <!-- 學生管理模組 -->
 <section id="studentModule" class="tab-content">
-<h2 class="text-xl font-bold text-yellow-300 mb-4">👨‍🎓 學生名單管理</h2>
-<form id="studentForm" class="flex gap-2 mb-4">
-<input type="text" id="studentId" placeholder="班級座號" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-<input type="text" id="studentName" placeholder="姓名" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
-<button type="submit" class="bg-pink-400 text-black px-4 py-2 rounded hover:bg-pink-300">➕ 新增學生</button>
-</form>
-<div class="overflow-x-auto">
-<table id="studentTable" class="min-w-full text-sm">
-<thead><tr><th>班級座號</th><th>姓名</th><th>操作</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+  <h2 class="text-xl font-bold text-yellow-300 mb-4">👨‍🎓 學生名單管理</h2>
+  <form id="studentForm" class="flex flex-wrap gap-2 mb-4">
+    <input type="text" id="studentId" placeholder="班級座號" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 flex-1 min-w-[120px]">
+    <input type="text" id="studentName" placeholder="姓名" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 flex-1 min-w-[120px]">
+    <button type="submit" class="bg-pink-400 text-black px-4 py-2 rounded hover:bg-pink-300">➕ 新增學生</button>
+  </form>
+  <div class="overflow-x-auto border border-gray-700 rounded">
+    <table id="studentTable" class="min-w-full text-sm divide-y divide-gray-700">
+      <thead class="bg-gray-900 sticky top-0">
+        <tr>
+          <th class="px-4 py-2 text-left text-yellow-300">班級座號</th>
+          <th class="px-4 py-2 text-left text-yellow-300">姓名</th>
+          <th class="px-4 py-2 text-center text-yellow-300">操作</th>
+        </tr>
+      </thead>
+      <tbody class="bg-gray-800 divide-y divide-gray-700">
+        <!-- 資料列會由 JS 動態生成 -->
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <!-- 返回首頁 -->
