@@ -34,12 +34,14 @@ th { background:#222; }
 </header>
 
 <main class="flex-grow p-6 max-w-6xl mx-auto">
+
 <!-- Tab 選單 -->
 <div class="mb-6 flex flex-wrap gap-2">
 <button class="tab-btn bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300" data-target="eventModule">📅 活動管理</button>
 <button class="tab-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" data-target="announceModule">📣 公告管理</button>
-<button class="tab-btn bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" data-target="dailyModule">📝 單日簽到</button>
+<button class="tab-btn bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" data-target="dailyModule">📝 單日簽到</button>
 <button class="tab-btn bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-500" data-target="summaryModule">📊 總覽模式</button>
+<button class="tab-btn bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-500" data-target="studentModule">👨‍🎓 學生名單管理</button>
 </div>
 
 <!-- 活動管理模組 -->
@@ -106,6 +108,23 @@ th { background:#222; }
 </table>
 </div>
 </section>
+
+<!-- 學生管理模組 -->
+<section id="studentModule" class="tab-content">
+<h2 class="text-xl font-bold text-yellow-300 mb-4">👨‍🎓 學生名單管理</h2>
+<form id="studentForm" class="flex gap-2 mb-4">
+<input type="text" id="studentId" placeholder="班級座號" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<input type="text" id="studentName" placeholder="姓名" required class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<button type="submit" class="bg-pink-400 text-black px-4 py-2 rounded hover:bg-pink-300">➕ 新增學生</button>
+</form>
+<div class="overflow-x-auto">
+<table id="studentTable" class="min-w-full text-sm">
+<thead><tr><th>班級座號</th><th>姓名</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
+
 </main>
 
 <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
@@ -127,33 +146,28 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// ===== DOM 元素 & Tab =====
+// DOM
 const adminEmailEl=document.getElementById("adminEmail");
 const logoutBtn=document.getElementById("logoutBtn");
-auth.onAuthStateChanged(u=>{if(u) adminEmailEl.textContent=u.email; else window.location.href="login.html";});
+
+// 登入檢查
+auth.onAuthStateChanged(u=>{
+  if(u) adminEmailEl.textContent=u.email;
+  else window.location.href="login.html";
+});
 logoutBtn.addEventListener("click",()=>auth.signOut());
 
 // Tab 切換
 document.querySelectorAll(".tab-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-    document.getElementById(btn.dataset.target).classList.add("active");
-  });
+  document.getElementById(btn.dataset.target).classList.add("active");});
 });
 
-// ===== Firebase 參考 =====
-const studentsRef = db.ref("students");
-const checkinRef = db.ref("checkinRecords");
-const eventsRef = db.ref("events");
-const announceRef = db.ref("announcements");
-
-// ===== 自動檢查 Firebase 資料 =====
-async function checkDatabaseExistence() {
-  const studentsSnap = await studentsRef.once("value");
-  if(!studentsSnap.exists()) alert("⚠️ students 資料表不存在，請先建立學生名單！");
-  const recordsSnap = await checkinRef.once("value");
-  if(!recordsSnap.exists()) console.log("⚠️ checkinRecords 尚未建立，單日模式將自動產生缺席紀錄。");
-}
-window.addEventListener("load", checkDatabaseExistence);
+// Firebase 參考
+const studentsRef=db.ref("students");
+const checkinRef=db.ref("checkinRecords");
+const eventsRef=db.ref("events");
+const announceRef=db.ref("announcements");
 
 // ===== 活動管理 =====
 const eventForm=document.getElementById("eventForm");
@@ -207,134 +221,169 @@ announceRef.on("value",snap=>{
   if(expiredAnnounceList.innerHTML==="") expiredAnnounceList.innerHTML=`<li class="text-gray-500">目前沒有過期公告</li>`;
 });
 
-// ===== 單日簽到 & 總覽模式 =====
-// 稍後可接上前面我幫你寫的完整 loadRecords / exportRecords / fillAbsent / summary 功能
-// ===== 單日模式 =====
-const datePicker=document.getElementById("datePicker");
-const recordsTableBody=document.querySelector("#recordsTable tbody");
-const loadRecordsBtn=document.getElementById("loadRecordsBtn");
-const exportBtn=document.getElementById("exportBtn");
-const fillAbsentBtn=document.getElementById("fillAbsentBtn");
+// ===== 學生管理模組 =====
+const studentForm=document.getElementById("studentForm");
+const studentTable=document.getElementById("studentTable").querySelector("tbody");
 
-let currentDate=null;
-let currentData={};
-let studentsList={};
-
-studentsRef.on("value", snap=>{studentsList=snap.val()||{}; if(currentDate) loadRecords();});
-loadRecordsBtn.addEventListener("click",loadRecords);
-exportBtn.addEventListener("click",exportRecords);
-fillAbsentBtn.addEventListener("click",fillAbsent);
-
-async function loadRecords(){
-  currentDate=datePicker.value;
-  if(!currentDate){alert("請選擇日期！");return;}
-  recordsTableBody.innerHTML="<tr><td colspan='6'>載入中...</td></tr>";
-
-  const snapshot=await checkinRef.child(currentDate).once("value");
-  const checkinData=snapshot.val()||{};
-  currentData={...checkinData};
-
-  Object.keys(studentsList).forEach(id=>{
-    if(!currentData[id]) currentData[id]={name:studentsList[id].name,status:"缺席",reason:"",time:""};
-  });
-
-  renderTable();
-}
-
-function renderTable(){
-  recordsTableBody.innerHTML="";
-  Object.entries(currentData).forEach(([id,r])=>{
+studentsRef.on("value",snap=>{
+  const data=snap.val()||{};
+  studentTable.innerHTML="";
+  Object.entries(data).forEach(([id,info])=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${id}</td><td>${r.name||""}</td>
-    <td><select onchange="updateStatus('${currentDate}','${id}',this.value)">
-      <option value="出席" ${r.status==="出席"?"selected":""}>出席</option>
-      <option value="請假" ${r.status==="請假"?"selected":""}>請假</option>
-      <option value="缺席" ${r.status==="缺席"?"selected":""}>缺席</option>
-    </select></td>
-    <td><input type="text" value="${r.reason||""}" onchange="updateReason('${currentDate}','${id}',this.value)"/></td>
-    <td>${r.time||""}</td>
-    <td><button class="delete-btn" onclick="deleteRecord('${currentDate}','${id}')">刪除</button></td>`;
-    recordsTableBody.appendChild(tr);
+    tr.innerHTML=`<td>${id}</td><td>${info.name}</td><td><button class="delete-btn" data-id="${id}">刪除</button></td>`;
+    studentTable.appendChild(tr);
+  });
+  studentTable.querySelectorAll(".delete-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id=btn.dataset.id;
+      if(confirm(`確定要刪除 ${id} ${data[id].name} ?`)){
+        studentsRef.child(id).remove();
+      }
+    });
+  });
+});
+studentForm.addEventListener("submit",e=>{
+  e.preventDefault();
+  const id=document.getElementById("studentId").value.trim();
+  const name=document.getElementById("studentName").value.trim();
+  if(id && name){studentsRef.child(id).set({name}); studentForm.reset();}
+});
+
+// ===== 這裡可接入單日簽到、總覽模式完整 JS =====
+<script>
+// ===== 單日簽到 JS =====
+const datePicker = document.getElementById("datePicker");
+const loadRecordsBtn = document.getElementById("loadRecordsBtn");
+const recordsTable = document.getElementById("recordsTable").querySelector("tbody");
+const exportBtn = document.getElementById("exportBtn");
+const fillAbsentBtn = document.getElementById("fillAbsentBtn");
+
+async function loadDailyRecords(dateStr){
+  const snapshot = await studentsRef.get();
+  const students = snapshot.val() || {};
+  const checkSnap = await checkinRef.child(dateStr).get();
+  const records = checkSnap.val() || {};
+
+  recordsTable.innerHTML="";
+  Object.entries(students).forEach(([id,info])=>{
+    const rec = records[id] || {status:"未簽到", reason:"", time:""};
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${id}</td>
+      <td>${info.name}</td>
+      <td><select class="status">
+        <option value="出席" ${rec.status==="出席"?"selected":""}>出席</option>
+        <option value="缺席" ${rec.status==="缺席"?"selected":""}>缺席</option>
+        <option value="未簽到" ${rec.status==="未簽到"?"selected":""}>未簽到</option>
+      </select></td>
+      <td><input type="text" class="reason px-1" value="${rec.reason}"></td>
+      <td><input type="time" class="time" value="${rec.time}"></td>
+      <td><button class="delete-btn">刪除</button></td>
+    `;
+    recordsTable.appendChild(tr);
+
+    // 刪除按鈕
+    tr.querySelector(".delete-btn").addEventListener("click",()=>{
+      checkinRef.child(dateStr).child(id).remove();
+      tr.remove();
+    });
+
+    // 自動更新 Firebase
+    tr.querySelector(".status").addEventListener("change", e=>{
+      checkinRef.child(dateStr).child(id).update({status:e.target.value});
+    });
+    tr.querySelector(".reason").addEventListener("change", e=>{
+      checkinRef.child(dateStr).child(id).update({reason:e.target.value});
+    });
+    tr.querySelector(".time").addEventListener("change", e=>{
+      checkinRef.child(dateStr).child(id).update({time:e.target.value});
+    });
   });
 }
 
-function updateStatus(date,id,status){
-  const now=new Date().toLocaleString("zh-TW");
-  db.ref(`checkinRecords/${date}/${id}`).update({status,time:now});
-  currentData[id].status=status; currentData[id].time=now;
-}
+loadRecordsBtn.addEventListener("click",()=>{
+  const dateStr = datePicker.value;
+  if(!dateStr){alert("請選擇日期"); return;}
+  loadDailyRecords(dateStr);
+});
 
-function updateReason(date,id,reason){
-  const now=new Date().toLocaleString("zh-TW");
-  db.ref(`checkinRecords/${date}/${id}`).update({reason,time:now});
-  currentData[id].reason=reason; currentData[id].time=now;
-}
-
-function deleteRecord(date,id){if(confirm("確定刪除？")){db.ref(`checkinRecords/${date}/${id}`).remove().then(()=>loadRecords());}}
-
-function fillAbsent(){
-  Object.keys(currentData).forEach(id=>{
-    if(!currentData[id].status){updateStatus(currentDate,id,"缺席");}
+// 一鍵補全缺席
+fillAbsentBtn.addEventListener("click",()=>{
+  const dateStr = datePicker.value;
+  if(!dateStr){alert("請選擇日期"); return;}
+  Array.from(recordsTable.rows).forEach(row=>{
+    const statusSelect = row.querySelector(".status");
+    if(statusSelect.value==="未簽到") statusSelect.value="缺席";
+    const id = row.cells[0].textContent;
+    checkinRef.child(dateStr).child(id).update({status:"缺席"});
   });
-  alert("缺席學生已補全");
-}
+});
 
-function exportRecords(){
-  if(!currentDate){alert("請先選擇日期！");return;}
-  const rows=[["班級座號","姓名","原因"]];
-  Object.entries(currentData).forEach(([id,r])=>rows.push([id,r.name||"",r.reason||""]));
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"簽到紀錄");
-  XLSX.writeFile(wb,`簽到紀錄_${currentDate}.xlsx`);
-}
+// 匯出 Excel 單日
+exportBtn.addEventListener("click",()=>{
+  const dateStr = datePicker.value;
+  if(!dateStr){alert("請選擇日期"); return;}
+  const wb = XLSX.utils.book_new();
+  const data = [["班級座號","姓名","原因"]];
+  Array.from(recordsTable.rows).forEach(row=>{
+    const id=row.cells[0].textContent;
+    const name=row.cells[1].textContent;
+    const reason=row.querySelector(".reason").value;
+    data.push([id,name,reason]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,"簽到");
+  XLSX.writeFile(wb, `簽到-${dateStr}.xlsx`);
+});
 
-// ===== 總覽模式 =====
-const startDate=document.getElementById("startDate");
-const endDate=document.getElementById("endDate");
-const summaryTableBody=document.querySelector("#summaryTable tbody");
-const loadSummaryBtn=document.getElementById("loadSummaryBtn");
-const exportSummaryBtn=document.getElementById("exportSummaryBtn");
-
-loadSummaryBtn.addEventListener("click",loadSummary);
-exportSummaryBtn.addEventListener("click",exportSummary);
+// ===== 總覽模式 JS =====
+const startDate = document.getElementById("startDate");
+const endDate = document.getElementById("endDate");
+const loadSummaryBtn = document.getElementById("loadSummaryBtn");
+const exportSummaryBtn = document.getElementById("exportSummaryBtn");
+const summaryTable = document.getElementById("summaryTable").querySelector("tbody");
 
 async function loadSummary(){
-  const start=startDate.value,end=endDate.value;
-  if(!start||!end){alert("請選擇日期範圍！");return;}
-  summaryTableBody.innerHTML="<tr><td colspan='3'>計算中...</td></tr>";
-  let summary={};
+  const sDate = startDate.value;
+  const eDate = endDate.value;
+  if(!sDate || !eDate){alert("請選擇日期"); return;}
+  const snapshot = await studentsRef.get();
+  const students = snapshot.val() || {};
+  const recordsSnap = await checkinRef.get();
+  const allRecords = recordsSnap.val() || {};
 
-  Object.keys(studentsList).forEach(id=>{summary[id]={name:studentsList[id].name,reason:""};});
-
-  let current=new Date(start),endD=new Date(end);
-  while(current<=endD){
-    const dateStr=current.toISOString().slice(0,10);
-    const snapshot=await checkinRef.child(dateStr).once("value");
-    const data=snapshot.val()||{};
-    Object.keys(data).forEach(id=>{if(data[id].reason) summary[id].reason=data[id].reason;});
-    current.setDate(current.getDate()+1);
-  }
-
-  summaryTableBody.innerHTML="";
-  Object.keys(summary).forEach(id=>{
-    const s=summary[id];
+  summaryTable.innerHTML="";
+  Object.entries(students).forEach(([id,info])=>{
+    let reasons=[];
+    for(const [date, recs] of Object.entries(allRecords)){
+      if(date>=sDate && date<=eDate && recs[id] && recs[id].status==="缺席") reasons.push(recs[id].reason||"");
+    }
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${id}</td><td>${s.name}</td><td>${s.reason}</td>`;
-    summaryTableBody.appendChild(tr);
+    tr.innerHTML=`<td>${id}</td><td>${info.name}</td><td>${reasons.join("、")}</td>`;
+    summaryTable.appendChild(tr);
   });
 }
 
-function exportSummary(){
-  if(summaryTableBody.children.length===0){alert("請先載入總覽資料！");return;}
-  const rows=[["班級座號","姓名","原因"]];
-  Array.from(summaryTableBody.children).forEach(tr=>rows.push(Array.from(tr.children).map(td=>td.innerText)));
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"總覽");
-  XLSX.writeFile(wb,"簽到總覽.xlsx");
-}
+// 載入總覽
+loadSummaryBtn.addEventListener("click", loadSummary);
 
+// 匯出總覽
+exportSummaryBtn.addEventListener("click",()=>{
+  const sDate = startDate.value;
+  const eDate = endDate.value;
+  if(!sDate || !eDate){alert("請選擇日期"); return;}
+  const wb=XLSX.utils.book_new();
+  const data=[["班級座號","姓名","原因"]];
+  Array.from(summaryTable.rows).forEach(row=>{
+    const id=row.cells[0].textContent;
+    const name=row.cells[1].textContent;
+    const reason=row.cells[2].textContent;
+    data.push([id,name,reason]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,"總覽");
+  XLSX.writeFile(wb, `總覽-${sDate}-to-${eDate}.xlsx`);
+});
 </script>
 </body>
 </html>
