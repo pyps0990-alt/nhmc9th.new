@@ -129,10 +129,9 @@ th { background:#222; }
 </section>
 
 <!-- 返回首頁 -->
-<section>
+<section class="mt-6">
 <div>
-  <span id="adminEmail" class="font-semibold text-white mr-4"></span>
-  <button id="backHomeBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm md:text-base mr-2">🏠 首頁</button>
+<button id="backHomeBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm md:text-base mr-2">🏠 首頁</button>
 </div>
 </section>
 </main>
@@ -208,10 +207,16 @@ eventsRef.on("value",snap=>{
   });
 });
 
-// 返回首頁按鈕
+// ===== 返回首頁按鈕（平滑滾動後跳轉） =====
 const backHomeBtn = document.getElementById("backHomeBtn");
-backHomeBtn.addEventListener("click",()=>{
-  window.location.href = "https://pyps0990-alt.github.io/nhmc9th.new/index.html"; //返回首頁
+backHomeBtn.addEventListener("click", () => {
+  // 平滑滾動到頂部
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 等 300ms 後跳轉首頁
+  setTimeout(() => {
+    window.location.href = "https://pyps0990-alt.github.io/nhmc9th.new/index.html";
+  }, 300);
+});
 
 // ===== 公告管理 =====
 const announceForm=document.getElementById("announceForm");
