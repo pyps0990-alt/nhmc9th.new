@@ -19,6 +19,8 @@ th,td { border:1px solid #666; padding:6px; text-align:center; }
 th { background:#222; }
 .delete-btn { background:#e74c3c; color:white; border:none; cursor:pointer; padding:4px 8px; }
 .delete-btn:hover { background:#c0392b; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -32,13 +34,47 @@ th { background:#222; }
 </header>
 
 <main class="flex-grow p-6 max-w-6xl mx-auto">
-<div class="mb-6">
-<button onclick="showTab('daily')" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📋 單日管理</button>
-<button onclick="showTab('summary')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">📊 總覽模式</button>
+<!-- Tab 選單 -->
+<div class="mb-6 flex flex-wrap gap-2">
+<button class="tab-btn bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300" data-target="eventModule">📅 活動管理</button>
+<button class="tab-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" data-target="announceModule">📣 公告管理</button>
+<button class="tab-btn bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500" data-target="dailyModule">📝 單日簽到</button>
+<button class="tab-btn bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-500" data-target="summaryModule">📊 總覽模式</button>
 </div>
 
-<!-- 單日管理 -->
-<section id="daily" class="tab-content">
+<!-- 活動管理模組 -->
+<section id="eventModule" class="tab-content">
+<h2 class="text-xl font-bold text-yellow-300 mb-4">📅 活動設定</h2>
+<form id="eventForm" class="space-y-4 mb-6">
+<input type="text" id="eventTitle" placeholder="活動標題" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<input type="date" id="eventDate" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<textarea id="eventDesc" rows="3" placeholder="活動說明（選填）" class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
+<button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">➕ 新增活動</button>
+</form>
+<ul id="eventList" class="space-y-2 text-sm text-white"></ul>
+</section>
+
+<!-- 公告管理模組 -->
+<section id="announceModule" class="tab-content">
+<h2 class="text-xl font-bold text-yellow-300 mb-4">📣 公告管理</h2>
+<form id="announceForm" class="space-y-4 mb-6">
+<textarea id="announceText" rows="3" placeholder="輸入公告內容" required class="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></textarea>
+<div class="flex gap-2">
+<input type="date" id="announceExpire" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+<input type="time" id="announceExpireTime" required class="flex-1 px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
+</div>
+<button type="submit" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">📢 發布公告</button>
+</form>
+
+<h3 class="text-lg font-bold text-yellow-200 mb-2">🟢 生效中公告</h3>
+<ul id="activeAnnounceList" class="space-y-2 text-sm text-white mb-4"></ul>
+
+<h3 class="text-lg font-bold text-gray-400 mb-2">⚪ 過期公告</h3>
+<ul id="expiredAnnounceList" class="space-y-2 text-sm text-gray-400"></ul>
+</section>
+
+<!-- 單日簽到模組 -->
+<section id="dailyModule" class="tab-content">
 <h2 class="text-xl font-bold text-yellow-300 mb-4">📝 單日簽到管理</h2>
 <div class="flex items-center gap-2 mb-4">
 <input type="date" id="datePicker" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600">
@@ -48,18 +84,14 @@ th { background:#222; }
 </div>
 <div class="overflow-x-auto">
 <table id="recordsTable" class="min-w-full text-sm">
-<thead>
-<tr>
-<th>班級座號</th><th>姓名</th><th>狀態</th><th>原因</th><th>時間</th><th>操作</th>
-</tr>
-</thead>
+<thead><tr><th>班級座號</th><th>姓名</th><th>狀態</th><th>原因</th><th>時間</th><th>操作</th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
 </section>
 
 <!-- 總覽模式 -->
-<section id="summary" class="tab-content hidden">
+<section id="summaryModule" class="tab-content">
 <h2 class="text-xl font-bold text-yellow-300 mb-4">📊 總覽模式</h2>
 <div class="flex items-center gap-2 mb-4">
 <label>開始：<input type="date" id="startDate" class="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"></label>
@@ -95,18 +127,88 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// ===== DOM 元素 =====
+// ===== DOM 元素 & Tab =====
 const adminEmailEl=document.getElementById("adminEmail");
 const logoutBtn=document.getElementById("logoutBtn");
 auth.onAuthStateChanged(u=>{if(u) adminEmailEl.textContent=u.email; else window.location.href="login.html";});
 logoutBtn.addEventListener("click",()=>auth.signOut());
 
-function showTab(tab){document.querySelectorAll('.tab-content').forEach(s=>s.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');}
+// Tab 切換
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+    document.getElementById(btn.dataset.target).classList.add("active");
+  });
+});
 
 // ===== Firebase 參考 =====
 const studentsRef = db.ref("students");
 const checkinRef = db.ref("checkinRecords");
+const eventsRef = db.ref("events");
+const announceRef = db.ref("announcements");
 
+// ===== 自動檢查 Firebase 資料 =====
+async function checkDatabaseExistence() {
+  const studentsSnap = await studentsRef.once("value");
+  if(!studentsSnap.exists()) alert("⚠️ students 資料表不存在，請先建立學生名單！");
+  const recordsSnap = await checkinRef.once("value");
+  if(!recordsSnap.exists()) console.log("⚠️ checkinRecords 尚未建立，單日模式將自動產生缺席紀錄。");
+}
+window.addEventListener("load", checkDatabaseExistence);
+
+// ===== 活動管理 =====
+const eventForm=document.getElementById("eventForm");
+const eventList=document.getElementById("eventList");
+eventForm.addEventListener("submit",e=>{e.preventDefault();
+  const title=document.getElementById("eventTitle").value.trim();
+  const date=document.getElementById("eventDate").value;
+  const desc=document.getElementById("eventDesc").value.trim();
+  if(title && date){eventsRef.push({title,date,desc}); eventForm.reset();}
+});
+eventsRef.on("value",snap=>{
+  const data=snap.val()||{};
+  eventList.innerHTML="";
+  Object.entries(data).forEach(([k,v])=>{
+    const li=document.createElement("li");
+    li.innerHTML=`<div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+    <span>${v.date}｜${v.title}</span>
+    <button class="delete-btn" onclick="firebase.database().ref('events/${k}').remove()">取消</button>
+    </div>`; eventList.appendChild(li);
+  });
+});
+
+// ===== 公告管理 =====
+const announceForm=document.getElementById("announceForm");
+const activeAnnounceList=document.getElementById("activeAnnounceList");
+const expiredAnnounceList=document.getElementById("expiredAnnounceList");
+announceForm.addEventListener("submit",e=>{e.preventDefault();
+  const text=document.getElementById("announceText").value.trim();
+  const expireDate=document.getElementById("announceExpire").value;
+  const expireTime=document.getElementById("announceExpireTime").value;
+  if(text && expireDate && expireTime){
+    const [h,m]=expireTime.split(":").map(Number);
+    const expiresAt=new Date(expireDate); expiresAt.setHours(h,m,0,0);
+    const timestamp=Date.now();
+    announceRef.push({text,timestamp,expiresAt:expiresAt.getTime()}); announceForm.reset();
+  }
+});
+announceRef.on("value",snap=>{
+  const data=snap.val()||{};
+  const now=Date.now(); activeAnnounceList.innerHTML=""; expiredAnnounceList.innerHTML="";
+  Object.entries(data).forEach(([k,v])=>{
+    const time=new Date(v.timestamp).toLocaleString("zh-TW");
+    const expire=v.expiresAt?new Date(v.expiresAt).toLocaleString("zh-TW"):"無期限";
+    const liHTML=`<div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+      <span>${v.text}<br><span class="text-xs text-gray-400">🕒 發布：${time}｜截止：${expire}</span></span>
+      <button class="delete-btn" onclick="firebase.database().ref('announcements/${k}').remove()">刪除</button>
+      </div>`;
+    if(v.expiresAt && v.expiresAt<now) expiredAnnounceList.innerHTML+=liHTML; else activeAnnounceList.innerHTML+=liHTML;
+  });
+  if(activeAnnounceList.innerHTML==="") activeAnnounceList.innerHTML=`<li class="text-gray-400">目前沒有生效中公告</li>`;
+  if(expiredAnnounceList.innerHTML==="") expiredAnnounceList.innerHTML=`<li class="text-gray-500">目前沒有過期公告</li>`;
+});
+
+// ===== 單日簽到 & 總覽模式 =====
+// 稍後可接上前面我幫你寫的完整 loadRecords / exportRecords / fillAbsent / summary 功能
 // ===== 單日模式 =====
 const datePicker=document.getElementById("datePicker");
 const recordsTableBody=document.querySelector("#recordsTable tbody");
@@ -232,18 +334,6 @@ function exportSummary(){
   XLSX.utils.book_append_sheet(wb,ws,"總覽");
   XLSX.writeFile(wb,"簽到總覽.xlsx");
 }
-
-// ===== 自動檢查 Firebase 資料存在 =====
-async function checkDatabaseExistence() {
-  const studentsSnap = await studentsRef.once("value");
-  if(!studentsSnap.exists()) alert("⚠️ students 資料表不存在，請先建立學生名單！");
-  
-  const recordsSnap = await checkinRef.once("value");
-  if(!recordsSnap.exists()) console.log("⚠️ checkinRecords 資料表尚未建立，單日模式將自動產生缺席紀錄。");
-}
-
-// 頁面載入時執行
-window.addEventListener("load", checkDatabaseExistence);
 
 </script>
 </body>
