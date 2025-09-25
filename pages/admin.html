@@ -126,6 +126,11 @@ th { background:#222; }
 <tbody></tbody>
 </table>
 </div>
+<div>
+  <span id="adminEmail" class="font-semibold text-white mr-4"></span>
+  <button id="backHomeBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm md:text-base mr-2">🏠 首頁</button>
+  <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm md:text-base">登出</button>
+</div>
 </section>
 
 </main>
@@ -199,6 +204,12 @@ eventsRef.on("value",snap=>{
     <button class="delete-btn" onclick="firebase.database().ref('events/${k}').remove()">取消</button>
     </div>`; eventList.appendChild(li);
   });
+});
+
+// 返回首頁按鈕
+const backHomeBtn = document.getElementById("backHomeBtn");
+backHomeBtn.addEventListener("click",()=>{
+  window.location.href = "index.html"; // 指向首頁
 });
 
 // ===== 公告管理 =====
