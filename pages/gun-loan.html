@@ -1,40 +1,102 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>槍枝借用系統</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>內湖高中軍武社 - 槍枝借用</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Roboto&display=swap" rel="stylesheet">
+
+  <!-- AOS CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-gray-900 text-white p-6">
-  <h1 class="text-2xl font-bold text-yellow-300 mb-4">🔫 槍枝借用系統</h1>
+<body class="bg-gray-900 text-white font-['Roboto']">
 
-  <!-- 槍枝狀態清單 -->
-  <div id="gun-list" class="mb-6 bg-gray-800 p-4 rounded"></div>
+  <!-- header / 導覽列 -->
+  <header class="bg-green-900 p-4 flex justify-between items-center" data-aos="fade-down">
+    <h1 class="text-xl md:text-2xl font-bold text-yellow-400">內湖高中軍武社</h1>
+    <div class="relative">
+      <button id="menuBtn" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 font-semibold text-sm md:text-base">
+        ☰ 選單
+      </button>
+      <div id="menuList" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded shadow-lg hidden z-50 menu-smooth">
+        <a href="../index.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🏠 首頁</a>
+        <a href="../pages/map.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🗺️ 教室地圖</a>
+        <a href="../pages/schedule.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📅 活動排程</a>
+        <a href="../pages/checkin.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📝 社課簽到</a>
+        <a href="../pages/finance.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">💰 財務紀錄</a>
+        <a href="../pages/knowledge.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">📚 知識分享</a>
+        <a href="../pages/about.html" class="block px-4 py-2 text-white hover:bg-green-700 text-sm">🎖 關於我們</a>
+        <a href="../pages/admin.html" id="adminLink" class="block px-4 py-2 text-white hover:bg-green-700 text-sm hidden">🛡️ 幹部後台</a>
+      </div>
+    </div>
+  </header>
 
-  <!-- 借用區（所有人可用） -->
-  <div class="mb-6 bg-gray-800 p-4 rounded space-y-2">
-    <h2 class="text-xl text-yellow-300 font-semibold">📥 借用槍枝</h2>
-    <input id="gunId" type="text" placeholder="槍枝 ID"
-      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <input id="classInfo" type="text" placeholder="班級 (例：201)"
-      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <input id="seatNumber" type="text" placeholder="座號 (例：15)"
-      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <input id="studentName" type="text" placeholder="姓名"
-      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <button onclick="borrowGun()" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 w-full">借出</button>
-  </div>
+  <!-- 主視覺區 -->
+  <section class="relative bg-black text-white py-16 px-4 text-center overflow-hidden" data-aos="fade-up">
+    <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image: url('../assets/images/IMG_1645.jpg');"></div>
+    <div class="relative z-10 max-w-3xl mx-auto">
+      <h1 class="text-3xl md:text-5xl font-bold text-yellow-300 mb-4 tracking-wide">槍枝借用系統</h1>
+      <p class="text-base md:text-xl text-gray-200 mb-6">紀錄槍枝借用與歸還狀態，方便社員管理</p>
+    </div>
+  </section>
 
-  <!-- 歸還區（所有人可用） -->
-  <div class="bg-gray-800 p-4 rounded space-y-2">
-    <h2 class="text-xl text-yellow-300 font-semibold">📤 歸還槍枝</h2>
-    <input id="returnGunId" type="text" placeholder="槍枝 ID"
-      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <button onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">歸還</button>
-  </div>
+  <!-- 主功能區 -->
+  <main class="max-w-4xl mx-auto py-10 px-4 space-y-8">
+
+    <!-- 槍枝清單 -->
+    <div id="gun-list" class="bg-gray-800 p-4 rounded text-left" data-aos="fade-right"></div>
+
+    <!-- 借出 -->
+    <div class="bg-gray-800 p-4 rounded space-y-2" data-aos="fade-up">
+      <h2 class="text-xl text-yellow-300 font-semibold">📥 借用槍枝</h2>
+      <input id="gunId" type="text" placeholder="槍枝 ID" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <input id="classInfo" type="text" placeholder="班級 (例：201)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <input id="seatNumber" type="text" placeholder="座號 (例：15)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <input id="studentName" type="text" placeholder="姓名" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <button onclick="borrowGun()" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 w-full">借出</button>
+    </div>
+
+    <!-- 歸還 -->
+    <div class="bg-gray-800 p-4 rounded space-y-2" data-aos="fade-up" data-aos-delay="100">
+      <h2 class="text-xl text-yellow-300 font-semibold">📤 歸還槍枝</h2>
+      <input id="returnGunId" type="text" placeholder="槍枝 ID" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <button onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">歸還</button>
+    </div>
+
+    <!-- 幹部管理區 -->
+    <div id="admin-section" class="bg-gray-800 p-4 rounded space-y-2 hidden" data-aos="fade-up" data-aos-delay="200">
+      <h2 class="text-xl text-yellow-300 font-semibold">🛠 管理槍枝（幹部專用）</h2>
+      <input id="newGunId" type="text" placeholder="新槍枝 ID" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <input id="newGunName" type="text" placeholder="槍枝名稱" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <input id="newGunType" type="text" placeholder="槍枝類型" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <button onclick="addGun()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">新增槍枝</button>
+
+      <input id="deleteGunId" type="text" placeholder="槍枝 ID" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <button onclick="deleteGun()" class="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800 w-full">刪除槍枝</button>
+    </div>
+
+  </main>
+
+  <!-- footer -->
+  <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400" data-aos="fade-up">
+    &copy; 2025 內湖高中軍武社 | 設計者：奕嘉
+  </footer>
+
+  <!-- AOS JS -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, once: true });
+  </script>
 
   <script>
     // Firebase 設定
@@ -46,12 +108,12 @@
       appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
     };
 
-    // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
     const gunsRef = db.ref("guns");
 
-    // 初始化預設槍枝
+    // 初始化槍枝
     function initGuns() {
       gunsRef.once("value", snapshot => {
         if (!snapshot.exists()) {
@@ -71,8 +133,8 @@
       const list = document.getElementById("gun-list");
       list.innerHTML = "";
       for (let id in data) {
-        let gun = data[id];
-        let status = gun.isBorrowed
+        const gun = data[id];
+        const status = gun.isBorrowed
           ? `<span class="text-red-400">已借出 (${gun.borrower})</span>`
           : `<span class="text-green-400">可借用</span>`;
         list.innerHTML += `<div class="py-1 border-b border-gray-600">[${id}] ${gun.name} - ${status}</div>`;
@@ -85,18 +147,12 @@
       const classInfo = document.getElementById("classInfo").value.trim();
       const seatNumber = document.getElementById("seatNumber").value.trim();
       const studentName = document.getElementById("studentName").value.trim();
-
-      if (!gunId || !classInfo || !seatNumber || !studentName) {
-        return alert("請完整輸入槍枝ID、班級、座號、姓名");
-      }
-
+      if (!gunId || !classInfo || !seatNumber || !studentName) return alert("請完整輸入欄位");
       const borrowerInfo = `${classInfo}班 ${seatNumber}號 ${studentName}`;
       const gunRef = gunsRef.child(gunId);
-
       gunRef.once("value", snapshot => {
         if (!snapshot.exists()) return alert("找不到這把槍");
-        const gun = snapshot.val();
-        if (gun.isBorrowed) return alert("這把槍已被借出");
+        if (snapshot.val().isBorrowed) return alert("這把槍已被借出");
         gunRef.update({ isBorrowed: true, borrower: borrowerInfo });
       });
     }
@@ -105,15 +161,48 @@
     function returnGun() {
       const gunId = document.getElementById("returnGunId").value.trim();
       if (!gunId) return alert("請輸入槍枝ID");
-
       const gunRef = gunsRef.child(gunId);
       gunRef.once("value", snapshot => {
         if (!snapshot.exists()) return alert("找不到這把槍");
-        const gun = snapshot.val();
-        if (!gun.isBorrowed) return alert("這把槍本來就沒被借出");
+        if (!snapshot.val().isBorrowed) return alert("這把槍本來就沒被借出");
         gunRef.update({ isBorrowed: false, borrower: "" });
       });
     }
+
+    // 幹部管理
+    function addGun() {
+      const id = document.getElementById("newGunId").value.trim();
+      const name = document.getElementById("newGunName").value.trim();
+      const type = document.getElementById("newGunType").value.trim();
+      if (!id || !name || !type) return alert("請完整輸入欄位");
+      const gunRef = gunsRef.child(id);
+      gunRef.once("value", snapshot => {
+        if (snapshot.exists()) return alert("槍枝ID已存在");
+        gunRef.set({ name, type, isBorrowed: false, borrower: "" });
+      });
+    }
+
+    function deleteGun() {
+      const id = document.getElementById("deleteGunId").value.trim();
+      if (!id) return alert("請輸入槍枝ID");
+      const gunRef = gunsRef.child(id);
+      gunRef.once("value", snapshot => {
+        if (!snapshot.exists()) return alert("找不到這把槍");
+        gunRef.remove();
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      const adminSection = document.getElementById("admin-section");
+      if (user) adminSection.classList.remove("hidden");
+      else adminSection.classList.add("hidden");
+    });
+
+    // 選單按鈕
+    document.getElementById("menuBtn").addEventListener("click", () => {
+      const menu = document.getElementById("menuList");
+      menu.classList.toggle("hidden");
+    });
   </script>
 </body>
 </html>
