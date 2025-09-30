@@ -6,7 +6,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-900 text-white p-6">
@@ -15,20 +14,30 @@
   <!-- 槍枝狀態清單 -->
   <div id="gun-list" class="mb-6 bg-gray-800 p-4 rounded"></div>
 
-  <!-- 操作區（幹部登入後才會顯示） -->
-  <div id="actions" class="space-y-2 hidden">
+  <!-- 借用區（所有人可用） -->
+  <div class="mb-6 bg-gray-800 p-4 rounded space-y-2">
+    <h2 class="text-xl text-yellow-300 font-semibold">📥 借用槍枝</h2>
     <input id="gunId" type="text" placeholder="槍枝 ID"
       class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <input id="borrower" type="text" placeholder="借用人"
+    <input id="classInfo" type="text" placeholder="班級 (例：201)"
       class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
-    <div class="flex space-x-2">
-      <button onclick="borrowGun()" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">借出</button>
-      <button onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">歸還</button>
-    </div>
+    <input id="seatNumber" type="text" placeholder="座號 (例：15)"
+      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+    <input id="studentName" type="text" placeholder="姓名"
+      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+    <button onclick="borrowGun()" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 w-full">借出</button>
+  </div>
+
+  <!-- 歸還區（所有人可用） -->
+  <div class="bg-gray-800 p-4 rounded space-y-2">
+    <h2 class="text-xl text-yellow-300 font-semibold">📤 歸還槍枝</h2>
+    <input id="returnGunId" type="text" placeholder="槍枝 ID"
+      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+    <button onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">歸還</button>
   </div>
 
   <script>
-    // ✅ 跟 index.html 同一組 Firebase 設定
+    // Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
       authDomain: "nhmc9th-672f6.firebaseapp.com",
@@ -40,10 +49,9 @@
     // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth();
     const gunsRef = db.ref("guns");
 
-    // 初始化預設資料（第一次用）
+    // 初始化預設槍枝
     function initGuns() {
       gunsRef.once("value", snapshot => {
         if (!snapshot.exists()) {
@@ -57,7 +65,7 @@
     }
     initGuns();
 
-    // 即時監聽 → 渲染清單
+    // 渲染清單
     gunsRef.on("value", snapshot => {
       const data = snapshot.val();
       const list = document.getElementById("gun-list");
@@ -74,21 +82,28 @@
     // 借出
     function borrowGun() {
       const gunId = document.getElementById("gunId").value.trim();
-      const borrower = document.getElementById("borrower").value.trim();
-      if (!gunId || !borrower) return alert("請輸入槍枝ID和借用人");
+      const classInfo = document.getElementById("classInfo").value.trim();
+      const seatNumber = document.getElementById("seatNumber").value.trim();
+      const studentName = document.getElementById("studentName").value.trim();
 
+      if (!gunId || !classInfo || !seatNumber || !studentName) {
+        return alert("請完整輸入槍枝ID、班級、座號、姓名");
+      }
+
+      const borrowerInfo = `${classInfo}班 ${seatNumber}號 ${studentName}`;
       const gunRef = gunsRef.child(gunId);
+
       gunRef.once("value", snapshot => {
         if (!snapshot.exists()) return alert("找不到這把槍");
         const gun = snapshot.val();
         if (gun.isBorrowed) return alert("這把槍已被借出");
-        gunRef.update({ isBorrowed: true, borrower: borrower });
+        gunRef.update({ isBorrowed: true, borrower: borrowerInfo });
       });
     }
 
     // 歸還
     function returnGun() {
-      const gunId = document.getElementById("gunId").value.trim();
+      const gunId = document.getElementById("returnGunId").value.trim();
       if (!gunId) return alert("請輸入槍枝ID");
 
       const gunRef = gunsRef.child(gunId);
@@ -99,16 +114,6 @@
         gunRef.update({ isBorrowed: false, borrower: "" });
       });
     }
-
-    // 🔑 跟 index.html 同步 → 監聽登入狀態
-    auth.onAuthStateChanged(user => {
-      const actions = document.getElementById("actions");
-      if (user) {
-        actions.classList.remove("hidden"); // 幹部登入 → 顯示操作區
-      } else {
-        actions.classList.add("hidden"); // 沒登入 → 只能看清單
-      }
-    });
   </script>
 </body>
 </html>
