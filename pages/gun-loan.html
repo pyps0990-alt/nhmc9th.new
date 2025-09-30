@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>槍枝借用系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-900 text-white p-6">
+  <h1 class="text-2xl font-bold text-yellow-300 mb-4">🔫 槍枝借用系統</h1>
+
+  <!-- 槍枝狀態清單 -->
+  <div id="gun-list" class="mb-6 bg-gray-800 p-4 rounded"></div>
+
+  <!-- 操作區（幹部登入後才會顯示） -->
+  <div id="actions" class="space-y-2 hidden">
+    <input id="gunId" type="text" placeholder="槍枝 ID"
+      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+    <input id="borrower" type="text" placeholder="借用人"
+      class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+    <div class="flex space-x-2">
+      <button onclick="borrowGun()" class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300">借出</button>
+      <button onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">歸還</button>
+    </div>
+  </div>
+
+  <script>
+    // ✅ 跟 index.html 同一組 Firebase 設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+      authDomain: "nhmc9th-672f6.firebaseapp.com",
+      databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
+      projectId: "nhmc9th-672f6",
+      appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+    };
+
+    // 初始化 Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    const gunsRef = db.ref("guns");
+
+    // 初始化預設資料（第一次用）
+    function initGuns() {
+      gunsRef.once("value", snapshot => {
+        if (!snapshot.exists()) {
+          gunsRef.set({
+            G001: { name: "M4A1", type: "步槍", isBorrowed: false, borrower: "" },
+            G002: { name: "Glock 17", type: "手槍", isBorrowed: false, borrower: "" },
+            G003: { name: "AK47", type: "步槍", isBorrowed: false, borrower: "" }
+          });
+        }
+      });
+    }
+    initGuns();
+
+    // 即時監聽 → 渲染清單
+    gunsRef.on("value", snapshot => {
+      const data = snapshot.val();
+      const list = document.getElementById("gun-list");
+      list.innerHTML = "";
+      for (let id in data) {
+        let gun = data[id];
+        let status = gun.isBorrowed
+          ? `<span class="text-red-400">已借出 (${gun.borrower})</span>`
+          : `<span class="text-green-400">可借用</span>`;
+        list.innerHTML += `<div class="py-1 border-b border-gray-600">[${id}] ${gun.name} - ${status}</div>`;
+      }
+    });
+
+    // 借出
+    function borrowGun() {
+      const gunId = document.getElementById("gunId").value.trim();
+      const borrower = document.getElementById("borrower").value.trim();
+      if (!gunId || !borrower) return alert("請輸入槍枝ID和借用人");
+
+      const gunRef = gunsRef.child(gunId);
+      gunRef.once("value", snapshot => {
+        if (!snapshot.exists()) return alert("找不到這把槍");
+        const gun = snapshot.val();
+        if (gun.isBorrowed) return alert("這把槍已被借出");
+        gunRef.update({ isBorrowed: true, borrower: borrower });
+      });
+    }
+
+    // 歸還
+    function returnGun() {
+      const gunId = document.getElementById("gunId").value.trim();
+      if (!gunId) return alert("請輸入槍枝ID");
+
+      const gunRef = gunsRef.child(gunId);
+      gunRef.once("value", snapshot => {
+        if (!snapshot.exists()) return alert("找不到這把槍");
+        const gun = snapshot.val();
+        if (!gun.isBorrowed) return alert("這把槍本來就沒被借出");
+        gunRef.update({ isBorrowed: false, borrower: "" });
+      });
+    }
+
+    // 🔑 跟 index.html 同步 → 監聽登入狀態
+    auth.onAuthStateChanged(user => {
+      const actions = document.getElementById("actions");
+      if (user) {
+        actions.classList.remove("hidden"); // 幹部登入 → 顯示操作區
+      } else {
+        actions.classList.add("hidden"); // 沒登入 → 只能看清單
+      }
+    });
+  </script>
+</body>
+</html>
