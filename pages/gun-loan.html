@@ -60,7 +60,9 @@
     <!-- 借出 -->
     <div class="bg-gray-800 p-4 rounded space-y-2" data-aos="fade-up">
       <h2 class="text-xl text-yellow-300 font-semibold">📥 借用槍枝</h2>
-      <input id="gunId" type="text" placeholder="槍枝 ID (例：G001)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <select id="gunId" class="px-3 py-2 rounded bg-gray-700 text-white w-full">
+        <option value="">選擇槍枝</option>
+      </select>
       <input id="classInfo" type="text" placeholder="班級 (例：201)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
       <input id="seatNumber" type="text" placeholder="座號 (例：15)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
       <input id="studentName" type="text" placeholder="姓名" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
@@ -70,7 +72,9 @@
     <!-- 歸還 -->
     <div class="bg-gray-800 p-4 rounded space-y-2" data-aos="fade-up" data-aos-delay="100">
       <h2 class="text-xl text-yellow-300 font-semibold">📤 歸還槍枝</h2>
-      <input id="returnGunId" type="text" placeholder="槍枝 ID (例：G001)" class="px-3 py-2 rounded bg-gray-700 text-white w-full" />
+      <select id="returnGunId" class="px-3 py-2 rounded bg-gray-700 text-white w-full">
+        <option value="">選擇已借出槍枝</option>
+      </select>
       <button id="returnBtn" onclick="returnGun()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">歸還</button>
     </div>
 
@@ -98,149 +102,157 @@
   <script> AOS.init({ duration: 800, once: true }); </script>
 
   <script>
-    // Firebase 設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
-      authDomain: "nhmc9th-672f6.firebaseapp.com",
-      databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
-      projectId: "nhmc9th-672f6",
-      appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
-    };
+  // ---------------- Firebase 設定 ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
+    authDomain: "nhmc9th-672f6.firebaseapp.com",
+    databaseURL: "https://nhmc9th-672f6-default-rtdb.firebaseio.com",
+    projectId: "nhmc9th-672f6",
+    appId: "1:470057381540:web:d5e0881cb540a7a58a0031"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const auth = firebase.auth();
+  const gunsRef = db.ref("guns");
 
-    // 初始化 Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-    const gunsRef = db.ref("guns");
+  // ---------------- 初始化槍枝 ----------------
+  function initGuns() {
+    gunsRef.once("value", snapshot => {
+      if (!snapshot.exists()) {
+        gunsRef.set({
+          G001: { name: "M4A1", type: "步槍", isBorrowed: false, borrower: "" },
+          G002: { name: "Glock 17", type: "手槍", isBorrowed: false, borrower: "" },
+          G003: { name: "AK47", type: "步槍", isBorrowed: false, borrower: "" }
+        });
+      }
+    });
+  }
+  initGuns();
 
-    // 初始化槍枝（如果資料庫是空的）
-    function initGuns() {
-      gunsRef.once("value", snapshot => {
-        if (!snapshot.exists()) {
-          gunsRef.set({
-            G001: { name: "M4A1", type: "步槍", isBorrowed: false, borrower: "" },
-            G002: { name: "Glock 17", type: "手槍", isBorrowed: false, borrower: "" },
-            G003: { name: "AK47", type: "步槍", isBorrowed: false, borrower: "" }
-          });
+  // ---------------- 監聽槍枝資料 ----------------
+  gunsRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+
+    // 選單
+    const borrowSelect = document.getElementById("gunId");
+    const returnSelect = document.getElementById("returnGunId");
+    borrowSelect.innerHTML = '<option value="">選擇槍枝</option>';
+    returnSelect.innerHTML = '<option value="">選擇已借出槍枝</option>';
+
+    // 清單
+    const list = document.getElementById("gun-list");
+    list.innerHTML = "";
+
+    for (const id in data) {
+      const gun = data[id];
+
+      // 選單填入
+      if (!gun.isBorrowed) borrowSelect.innerHTML += `<option value="${id}">${id} - ${gun.name}</option>`;
+      else returnSelect.innerHTML += `<option value="${id}">${id} - ${gun.name}</option>`;
+
+      // 清單顯示
+      const status = gun.isBorrowed
+        ? `<span class="text-red-400">已借出 (${gun.borrower})</span>`
+        : `<span class="text-green-400">可借用</span>`;
+      list.innerHTML += `<div class="py-2 border-b border-gray-600">[${id}] ${gun.name} - ${status}</div>`;
+    }
+
+    if (Object.keys(data).length === 0) {
+      list.innerHTML = `<div class="py-2 text-gray-300">目前尚無槍枝資料</div>`;
+    }
+  });
+
+  // ---------------- 借出功能 ----------------
+  function borrowGun() {
+    const gunId = document.getElementById("gunId").value.trim();
+    const classInfo = document.getElementById("classInfo").value.trim();
+    const seatNumber = document.getElementById("seatNumber").value.trim();
+    const studentName = document.getElementById("studentName").value.trim();
+    if (!gunId || !classInfo || !seatNumber || !studentName) {
+      return alert("請完整輸入欄位：槍枝ID、班級、座號、姓名");
+    }
+    const borrowerInfo = `${classInfo}班 ${seatNumber}號 ${studentName}`;
+    const gunRef = gunsRef.child(gunId);
+    gunRef.once("value", snapshot => {
+      if (!snapshot.exists()) return alert("找不到這把槍 (請確認ID)");
+      if (snapshot.val().isBorrowed) return alert("這把槍已被借出");
+      gunRef.update({ isBorrowed: true, borrower: borrowerInfo }, err => {
+        if (err) alert("借出失敗：" + err.message);
+        else {
+          document.getElementById("gunId").value = "";
+          document.getElementById("classInfo").value = "";
+          document.getElementById("seatNumber").value = "";
+          document.getElementById("studentName").value = "";
         }
       });
-    }
-    initGuns();
-
-    // 渲染清單
-    gunsRef.on("value", snapshot => {
-      const data = snapshot.val() || {};
-      const list = document.getElementById("gun-list");
-      list.innerHTML = "";
-      for (const id in data) {
-        const gun = data[id];
-        const status = gun.isBorrowed
-          ? `<span class="text-red-400">已借出 (${gun.borrower})</span>`
-          : `<span class="text-green-400">可借用</span>`;
-        list.innerHTML += `<div class="py-2 border-b border-gray-600">[${id}] ${gun.name} - ${status}</div>`;
-      }
-      if (Object.keys(data).length === 0) {
-        list.innerHTML = `<div class="py-2 text-gray-300">目前尚無槍枝資料</div>`;
-      }
     });
+  }
 
-    // 借出（所有人）
-    function borrowGun() {
-      const gunId = document.getElementById("gunId").value.trim();
-      const classInfo = document.getElementById("classInfo").value.trim();
-      const seatNumber = document.getElementById("seatNumber").value.trim();
-      const studentName = document.getElementById("studentName").value.trim();
-      if (!gunId || !classInfo || !seatNumber || !studentName) {
-        return alert("請完整輸入欄位：槍枝ID、班級、座號、姓名");
-      }
-      const borrowerInfo = `${classInfo}班 ${seatNumber}號 ${studentName}`;
-      const gunRef = gunsRef.child(gunId);
-      gunRef.once("value", snapshot => {
-        if (!snapshot.exists()) return alert("找不到這把槍 (請確認ID)");
-        if (snapshot.val().isBorrowed) return alert("這把槍已被借出");
-        gunRef.update({ isBorrowed: true, borrower: borrowerInfo }, err => {
-          if (err) alert("借出失敗：" + err.message);
-          else {
-            // 清空輸入
-            document.getElementById("gunId").value = "";
-            document.getElementById("classInfo").value = "";
-            document.getElementById("seatNumber").value = "";
-            document.getElementById("studentName").value = "";
-          }
-        });
+  // ---------------- 歸還功能 ----------------
+  function returnGun() {
+    const gunId = document.getElementById("returnGunId").value.trim();
+    if (!gunId) return alert("請輸入槍枝ID");
+    const gunRef = gunsRef.child(gunId);
+    gunRef.once("value", snapshot => {
+      if (!snapshot.exists()) return alert("找不到這把槍 (請確認ID)");
+      if (!snapshot.val().isBorrowed) return alert("這把槍本來就沒被借出");
+      gunRef.update({ isBorrowed: false, borrower: "" }, err => {
+        if (err) alert("歸還失敗：" + err.message);
+        else document.getElementById("returnGunId").value = "";
       });
-    }
-
-    // 歸還（所有人）
-    function returnGun() {
-      const gunId = document.getElementById("returnGunId").value.trim();
-      if (!gunId) return alert("請輸入槍枝ID");
-      const gunRef = gunsRef.child(gunId);
-      gunRef.once("value", snapshot => {
-        if (!snapshot.exists()) return alert("找不到這把槍 (請確認ID)");
-        if (!snapshot.val().isBorrowed) return alert("這把槍本來就沒被借出");
-        gunRef.update({ isBorrowed: false, borrower: "" }, err => {
-          if (err) alert("歸還失敗：" + err.message);
-          else document.getElementById("returnGunId").value = "";
-        });
-      });
-    }
-
-    // 幹部管理：新增
-    function addGun() {
-      const id = document.getElementById("newGunId").value.trim();
-      const name = document.getElementById("newGunName").value.trim();
-      const type = document.getElementById("newGunType").value.trim();
-      if (!id || !name || !type) return alert("請完整輸入欄位");
-      const gunRef = gunsRef.child(id);
-      gunRef.once("value", snapshot => {
-        if (snapshot.exists()) return alert("槍枝ID已存在");
-        gunRef.set({ name, type, isBorrowed: false, borrower: "" }, err => {
-          if (err) alert("新增失敗：" + err.message);
-          else {
-            document.getElementById("newGunId").value = "";
-            document.getElementById("newGunName").value = "";
-            document.getElementById("newGunType").value = "";
-          }
-        });
-      });
-    }
-
-    // 幹部管理：刪除
-    function deleteGun() {
-      const id = document.getElementById("deleteGunId").value.trim();
-      if (!id) return alert("請輸入槍枝ID");
-      const gunRef = gunsRef.child(id);
-      gunRef.once("value", snapshot => {
-        if (!snapshot.exists()) return alert("找不到這把槍");
-        gunRef.remove(err => {
-          if (err) alert("刪除失敗：" + err.message);
-          else document.getElementById("deleteGunId").value = "";
-        });
-      });
-    }
-
-    // 監聽登入 → 顯示管理區（如果有登入）
-    auth.onAuthStateChanged(user => {
-      const adminSection = document.getElementById("admin-section");
-      if (user) adminSection.classList.remove("hidden");
-      else adminSection.classList.add("hidden");
     });
+  }
 
-    // 選單按鈕行為（避免點選被其他地方擋掉）
-    document.getElementById("menuBtn").addEventListener("click", () => {
-      const menu = document.getElementById("menuList");
-      menu.classList.toggle("hidden");
+  // ---------------- 幹部管理 ----------------
+  function addGun() {
+    const id = document.getElementById("newGunId").value.trim();
+    const name = document.getElementById("newGunName").value.trim();
+    const type = document.getElementById("newGunType").value.trim();
+    if (!id || !name || !type) return alert("請完整輸入欄位");
+    const gunRef = gunsRef.child(id);
+    gunRef.once("value", snapshot => {
+      if (snapshot.exists()) return alert("槍枝ID已存在");
+      gunRef.set({ name, type, isBorrowed: false, borrower: "" }, err => {
+        if (err) alert("新增失敗：" + err.message);
+        else {
+          document.getElementById("newGunId").value = "";
+          document.getElementById("newGunName").value = "";
+          document.getElementById("newGunType").value = "";
+        }
+      });
     });
+  }
 
-    // 點頁面空白處關閉選單
-    document.addEventListener("click", (e) => {
-      const menu = document.getElementById("menuList");
-      const btn = document.getElementById("menuBtn");
-      if (!btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add("hidden");
-      }
+  function deleteGun() {
+    const id = document.getElementById("deleteGunId").value.trim();
+    if (!id) return alert("請輸入槍枝ID");
+    const gunRef = gunsRef.child(id);
+    gunRef.once("value", snapshot => {
+      if (!snapshot.exists()) return alert("找不到這把槍");
+      gunRef.remove(err => {
+        if (err) alert("刪除失敗：" + err.message);
+        else document.getElementById("deleteGunId").value = "";
+      });
     });
-  </script>
+  }
+
+  // ---------------- 登入狀態監聽 ----------------
+  auth.onAuthStateChanged(user => {
+    const adminSection = document.getElementById("admin-section");
+    if (user) adminSection.classList.remove("hidden");
+    else adminSection.classList.add("hidden");
+  });
+
+  // ---------------- 選單按鈕 ----------------
+  document.getElementById("menuBtn").addEventListener("click", () => {
+    const menu = document.getElementById("menuList");
+    menu.classList.toggle("hidden");
+  });
+  document.addEventListener("click", (e) => {
+    const menu = document.getElementById("menuList");
+    const btn = document.getElementById("menuBtn");
+    if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add("hidden");
+  });
+</script>
 </body>
 </html>
