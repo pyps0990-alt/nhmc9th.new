@@ -104,6 +104,7 @@
           <th class="px-4 py-2 text-left">姓名</th>
           <th class="px-4 py-2 text-left">班級座號</th>
           <th class="px-4 py-2 text-left">備註</th>
+          <th class="px-4 py-2 text-left">操作</th>
         </tr>
       </thead>
       <tbody class="text-gray-200" id="signedListBody"></tbody>
@@ -125,12 +126,36 @@
   </table>
 </section>
 
+<!-- 出缺勤統計表格 -->
+<section class="py-10 px-4 md:px-8 max-w-4xl mx-auto">
+  <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4 text-center">📊 出缺勤統計</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full table-auto text-sm md:text-base bg-gray-800 rounded">
+      <thead class="bg-blue-900 text-yellow-300">
+        <tr>
+          <th class="px-4 py-2 text-left">姓名</th>
+          <th class="px-4 py-2 text-left">座號</th>
+          <th class="px-4 py-2 text-left">出席</th>
+          <th class="px-4 py-2 text-left">缺席</th>
+          <th class="px-4 py-2 text-left">請假</th>
+          <th class="px-4 py-2 text-left">出席率</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-200" id="attendanceBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => { document.body.classList.add("loaded"); });
 
+// ---- Firebase 初始化 ----
 const firebaseConfig = {
   apiKey: "AIzaSyBLsMAvPcpKBoeIfAA-hF2UGrrU5RRS7t4",
   authDomain: "nhmc9th-672f6.firebaseapp.com",
@@ -143,23 +168,25 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
-const signedRef = db.ref("signedList");
 const studentsRef = db.ref("students");
+let today = new Date().toISOString().split('T')[0];
+let signedRef = db.ref("signedList/" + today);
 
+// ---- DOM 元素 ----
 const studentSelect = document.getElementById("studentSelect");
 const searchInput = document.getElementById("searchInput");
 const idInput = document.getElementById("id");
 const signedBody = document.getElementById("signedListBody");
 const unsignedBody = document.getElementById("unsignedListBody");
 const form = document.getElementById("checkinForm");
-
 const totalCountEl = document.getElementById("totalCount");
 const signedCountEl = document.getElementById("signedCount");
 const unsignedCountEl = document.getElementById("unsignedCount");
+const attendanceBody = document.getElementById("attendanceBody");
 
 let allStudents = [];
 
-/* ---- Toast ---- */
+// ---- Toast ----
 function showToast(msg, success = true) {
   const toast = document.createElement("div");
   toast.textContent = msg;
@@ -169,53 +196,10 @@ function showToast(msg, success = true) {
     ${success ? "bg-green-500" : "bg-red-500"}
   `;
   document.body.appendChild(toast);
-
   setTimeout(() => { toast.style.opacity="0"; toast.style.transform="translateY(20px)"; setTimeout(()=>toast.remove(),300); }, 2000);
 }
 
-/* ---- 更新名單 ---- */
-async function updateLists(latestSignedId=null){
-  const signedSnap = await signedRef.get();
-  const signedData = signedSnap.val() || {};
-  const signedList = Object.values(signedData);
-
-  const studentsSnap = await studentsRef.get();
-  const studentsData = studentsSnap.val() || {};
-
-  signedBody.innerHTML = "";
-  unsignedBody.innerHTML = "";
-  allStudents = Object.entries(studentsData).map(([id, info]) => ({id, name: info.name}));
-  allStudents.sort((a,b)=>a.id.localeCompare(b.id));
-
-  renderSelect(allStudents.filter(s => !signedList.some(sig=>sig.id===s.id)));
-
-  /* 已簽到 */
-  signedList.forEach(person=>{
-    const time = new Date(person.timestamp)
-      .toLocaleString("zh-TW",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false});
-    const row = document.createElement("tr");
-    row.classList.add("animate-row");
-    if(latestSignedId && person.id === latestSignedId){ row.classList.add("highlight-row"); }
-    row.innerHTML = `<td class="px-4 py-2">${person.name}</td><td class="px-4 py-2">${person.id}</td><td class="px-4 py-2">${person.note || '—'}<br><span class="text-xs text-gray-400">🕒 ${time}</span></td>`;
-    signedBody.appendChild(row);
-  });
-
-  /* 未簽到 */
-  allStudents.forEach(s=>{
-    if(!signedList.some(sig=>sig.id===s.id)){
-      const row=document.createElement("tr");
-      row.classList.add("animate-row");
-      row.innerHTML=`<td class="px-4 py-2">${s.name}</td><td class="px-4 py-2">${s.id}</td>`;
-      unsignedBody.appendChild(row);
-    }
-  });
-
-  totalCountEl.textContent = Object.keys(studentsData).length;
-  signedCountEl.textContent = signedList.length;
-  unsignedCountEl.textContent = Object.keys(studentsData).length - signedList.length;
-}
-
-/* ---- 渲染下拉選單 ---- */
+// ---- 渲染下拉選單 ----
 function renderSelect(list){
   studentSelect.innerHTML = '<option value="">請選擇姓名</option>';
   list.forEach(s=>{
@@ -227,49 +211,146 @@ function renderSelect(list){
   });
 }
 
-/* 搜尋 */
+// ---- 搜尋 ----
 searchInput.addEventListener("input",()=>{
   const term = searchInput.value.trim().toLowerCase();
   renderSelect(allStudents.filter(s=>s.name.toLowerCase().includes(term) || s.id.includes(term)));
 });
 
-/* 選擇姓名自動帶入座號 */
+// ---- 選擇姓名自動帶入座號 ----
 studentSelect.addEventListener("change",()=>{
   const selected = studentSelect.selectedOptions[0];
   idInput.value = selected ? selected.value : "";
 });
 
-/* ---- 簽到 ---- */
-form.addEventListener("submit",async e=>{
+// ---- 更新出缺勤統計表 ----
+async function updateAttendanceTable(allStudents) {
+  attendanceBody.innerHTML = "";
+  const allDaysSnap = await db.ref("signedList").get();
+  const allDaysData = allDaysSnap.val() || {};
+  const totalDays = Object.keys(allDaysData).length;
+
+  allStudents.forEach(student => {
+    let signedCount = 0;
+    let leaveCount = 0;
+    for (let date in allDaysData) {
+      const dayList = Object.values(allDaysData[date]);
+      if (dayList.some(s => s.id === student.id)) signedCount++;
+      if (dayList.some(s => s.id === student.id && s.note)) leaveCount++;
+    }
+    let absent = totalDays - signedCount;
+    let attendRate = totalDays ? ((signedCount / totalDays) * 100).toFixed(1) + "%" : "-";
+
+    const row = document.createElement("tr");
+    row.classList.add("animate-row");
+    row.innerHTML = `
+      <td class="px-4 py-2">${student.name}</td>
+      <td class="px-4 py-2">${student.id}</td>
+      <td class="px-4 py-2">${signedCount}</td>
+      <td class="px-4 py-2">${absent}</td>
+      <td class="px-4 py-2">${leaveCount}</td>
+      <td class="px-4 py-2">${attendRate}</td>
+    `;
+    attendanceBody.appendChild(row);
+  });
+}
+
+// ---- 更新名單（已簽到、未簽到） ----
+async function updateLists(latestSignedId = null) {
+  const signedSnap = await signedRef.get();
+  const signedData = signedSnap.val() || {};
+  const signedList = Object.entries(signedData).map(([key, v]) => ({ key, ...v }));
+
+  const studentsSnap = await studentsRef.get();
+  const studentsData = studentsSnap.val() || {};
+  allStudents = Object.entries(studentsData).map(([id, info]) => ({ id, name: info.name }));
+
+  allStudents.sort((a, b) => a.id.localeCompare(b.id));
+  renderSelect(allStudents.filter(s => !signedList.some(sig => sig.id === s.id)));
+
+  // --- 已簽到 ---
+  signedBody.innerHTML = "";
+  signedList.forEach(person => {
+    const row = document.createElement("tr");
+    row.classList.add("animate-row");
+    if (latestSignedId && person.id === latestSignedId) row.classList.add("highlight-row");
+
+    const time = new Date(person.timestamp).toLocaleString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
+
+    row.innerHTML = `
+      <td class="px-4 py-2">${person.name}</td>
+      <td class="px-4 py-2">${person.id}</td>
+      <td class="px-4 py-2">
+        ${person.note || "—"}
+        <br><span class="text-xs text-gray-400">🕒 ${time}</span>
+      </td>
+      <td class="px-4 py-2">
+        <button class="bg-red-500 px-3 py-1 rounded text-xs hover:bg-red-400 deleteBtn" data-key="${person.key}">
+          刪除
+        </button>
+      </td>
+    `;
+    signedBody.appendChild(row);
+  });
+
+  // --- 未簽到 ---
+  unsignedBody.innerHTML = "";
+  allStudents.forEach(s => {
+    if (!signedList.some(sig => sig.id === s.id)) {
+      const row = document.createElement("tr");
+      row.classList.add("animate-row");
+      row.innerHTML = `<td class="px-4 py-2">${s.name}</td><td class="px-4 py-2">${s.id}</td>`;
+      unsignedBody.appendChild(row);
+    }
+  });
+
+  // --- 更新數字 ---
+  totalCountEl.textContent = Object.keys(studentsData).length;
+  signedCountEl.textContent = signedList.length;
+  unsignedCountEl.textContent = Object.keys(studentsData).length - signedList.length;
+
+  // --- 刪除按鈕事件 ---
+  document.querySelectorAll(".deleteBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+      firebase.database().ref("signedList/" + today + "/" + key).remove();
+      showToast("已刪除簽到紀錄", false);
+    });
+  });
+
+  // --- 更新出缺勤統計 ---
+  updateAttendanceTable(allStudents);
+}
+
+// ---- 簽到提交 ----
+form.addEventListener("submit", async e => {
   e.preventDefault();
   const selected = studentSelect.selectedOptions[0];
-  if(!selected){ showToast("請選擇學生",false); return; }
+  if (!selected) { showToast("請選擇學生", false); return; }
 
   const name = selected.dataset.name;
   const id = selected.value;
   const note = document.getElementById("note").value.trim();
 
   const snapshot = await signedRef.orderByChild("id").equalTo(id).once("value");
-  if(snapshot.exists()){ showToast("此學生已簽到",false); return; }
+  if (snapshot.exists()) { showToast("此學生已簽到", false); return; }
 
-  signedRef.push({ name, id, note, timestamp: Date.now() });
+  await signedRef.push({ name, id, note, timestamp: Date.now() });
   form.reset();
+  showToast("簽到成功");
+  updateLists(id);
 });
 
-/* ---- Firebase 監聽 ---- */
-signedRef.on("child_added", snap=>{
-  const person = snap.val();
-  showToast(`${person.name} ✅ 已簽到`);
-  updateLists(person.id); // 高亮最新簽到列
-});
+// ---- Firebase 監聽自動刷新 ----
+signedRef.on("value", () => updateLists());
 studentsRef.on("value", updateLists);
 
-/* ---- 選單動畫 ---- */
+// ---- 選單動畫 ----
 const menuBtn = document.getElementById("menuBtn");
 const menuList = document.getElementById("menuList");
 let menuOpen = false;
 
-menuBtn.addEventListener("click", e=>{
+menuBtn.addEventListener("click", e => {
   e.stopPropagation();
   if(menuOpen){
     menuList.classList.remove("menu-animate-show");
@@ -282,7 +363,7 @@ menuBtn.addEventListener("click", e=>{
   menuOpen = !menuOpen;
 });
 
-document.addEventListener("click", e=>{
+document.addEventListener("click", e => {
   if(menuOpen && !menuBtn.contains(e.target) && !menuList.contains(e.target)){
     menuList.classList.remove("menu-animate-show");
     menuList.classList.add("menu-animate-hide");
@@ -291,7 +372,6 @@ document.addEventListener("click", e=>{
   }
 });
 </script>
-
 <footer class="bg-gray-800 text-center p-4 text-xs md:text-sm text-gray-400">
   &copy; 2025 內湖高中軍武社 | 設計者：陳奕嘉
 </footer>
